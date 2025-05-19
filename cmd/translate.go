@@ -23,7 +23,7 @@ var translateCmd = &cobra.Command{
 			log.Fatal("unable copying selected text", err)
 		}
 
-		response, err := translate.New(translate.TypeGoogleTranslate, "fa").Translate(selectedText)
+		response, err := translate.New(translate.TypeGrok, "fa").Translate(selectedText)
 		if err != nil {
 			log.Fatal("unable translating the word:", err)
 		}
