@@ -6,19 +6,12 @@ type Translator interface {
 	Translate(text string) (string, error)
 }
 
-type TranslatorType int
-
-const (
-	TypeGrok = iota
-	TypeGoogleTranslate
-)
-
-func New(t TranslatorType, to string) Translator {
+func New(t string, to string) Translator {
 	switch t {
-	case TypeGrok:
+	case "grok":
 		return grok{To: to, LlmModel: os.Getenv("GROK_LLM_MODEL"), ApiKey: os.Getenv("GROK_API_KEY")}
-	case TypeGoogleTranslate:
+	case "google":
 		return google{To: to}
 	}
-	return grok{To: to}
+	return google{To: to}
 }

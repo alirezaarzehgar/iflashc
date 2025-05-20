@@ -12,6 +12,8 @@ import (
 	"github.com/tiagomelo/go-clipboard/clipboard"
 )
 
+var transType string
+
 // translateCmd represents the translate command
 var translateCmd = &cobra.Command{
 	Use:   "translate",
@@ -23,7 +25,7 @@ var translateCmd = &cobra.Command{
 			log.Fatal("unable copying selected text", err)
 		}
 
-		response, err := translate.New(translate.TypeGrok, "fa").Translate(selectedText)
+		response, err := translate.New(transType, "fa").Translate(selectedText)
 		if err != nil {
 			log.Fatal("unable translating the word:", err)
 		}
@@ -37,14 +39,5 @@ var translateCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(translateCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// translateCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// translateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	translateCmd.PersistentFlags().StringVar(&transType, "tt", "google", "Set translation type")
 }
