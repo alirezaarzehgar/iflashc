@@ -1,17 +1,21 @@
 package translate
 
-import "os"
+type TranslatorConfig struct {
+	To       string
+	LLMmodel string
+	ApiKey   string
+}
 
 type Translator interface {
 	Translate(text string) (string, error)
 }
 
-func New(t string, to string) Translator {
+func New(t string, cfg TranslatorConfig) Translator {
 	switch t {
 	case "grok":
-		return grok{To: to, LlmModel: os.Getenv("GROK_LLM_MODEL"), ApiKey: os.Getenv("GROK_API_KEY")}
+		return grok{To: cfg.To, LlmModel: cfg.LLMmodel, ApiKey: cfg.ApiKey}
 	case "google":
-		return google{To: to}
+		return google{To: cfg.To}
 	}
-	return google{To: to}
+	return google{To: cfg.To}
 }

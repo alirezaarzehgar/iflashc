@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"log"
+	"os"
 
 	"github.com/alirezaarzehgar/iflashc/internal/gui"
 	"github.com/alirezaarzehgar/iflashc/internal/translate"
@@ -25,7 +26,8 @@ var translateCmd = &cobra.Command{
 			log.Fatal("unable copying selected text", err)
 		}
 
-		response, err := translate.New(transType, "fa").Translate(selectedText)
+		cfg := translate.TranslatorConfig{To: "fa", ApiKey: os.Getenv("GROK_API_KEY"), LLMmodel: os.Getenv("GROK_LLM_MODEL")}
+		response, err := translate.New(transType, cfg).Translate(selectedText)
 		if err != nil {
 			log.Fatal("unable translating the word:", err)
 		}
