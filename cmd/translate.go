@@ -4,7 +4,10 @@ Copyright © 2025 Alireza Arzehgar <alirezaarzehgar82@gmail.com>
 package cmd
 
 import (
+	"net/http"
+
 	"github.com/alirezaarzehgar/iflashc/internal/gui"
+	"github.com/alirezaarzehgar/iflashc/internal/setproxy"
 	"github.com/alirezaarzehgar/iflashc/internal/translate"
 	"github.com/spf13/cobra"
 	"github.com/tiagomelo/go-clipboard/clipboard"
@@ -18,6 +21,13 @@ func generalTranslate(translator translate.Translator) {
 	if err != nil {
 		gui.ShowWord("ERROR", "**unable copying the text**: "+err.Error())
 		return
+	}
+
+	if groqSocks5 != "" {
+		client, err := setproxy.NewSocks5Client(groqSocks5, nil)
+		if err == nil {
+			http.DefaultClient = client
+		}
 	}
 
 	response, err := translator.Translate(selectedText)
@@ -42,7 +52,7 @@ var translateCmd = &cobra.Command{
 	},
 }
 
-var groqApiKey, groqLlmModel string
+var groqApiKey, groqLlmModel, groqSocks5 string
 
 var groqCmd = &cobra.Command{
 	Use:   "groq",
@@ -66,6 +76,7 @@ func init() {
 	rootCmd.AddCommand(translateCmd)
 	translateCmd.PersistentFlags().StringVar(&transType, "tt", "google", "Set translation type")
 	translateCmd.AddCommand(groqCmd, googleCmd)
+	translateCmd.PersistentFlags().StringVar(&groqLlmModel, "socks5", "", "Socks5 proxy for all requests")
 
 	groqCmd.PersistentFlags().StringVar(&groqApiKey, "api-key", "", "API Key for groq")
 	groqCmd.PersistentFlags().StringVar(&groqLlmModel, "llm-model", "", "LLM Model name for groq")
