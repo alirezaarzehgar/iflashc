@@ -90,7 +90,7 @@ func talkToGroq(prompt, llmModel, apiKey string) (*GorqResponse, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
+		return nil, fmt.Errorf("failed to send request to %s: %w", req.Host, err)
 	}
 	resBytes, _ := io.ReadAll(res.Body)
 
@@ -101,7 +101,7 @@ func talkToGroq(prompt, llmModel, apiKey string) (*GorqResponse, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to do http request: %s", gorqRes.Error.Message)
+		return nil, fmt.Errorf("request failed with status: %d: %s", res.StatusCode, gorqRes.Error.Message)
 	}
 
 	return &gorqRes, nil
