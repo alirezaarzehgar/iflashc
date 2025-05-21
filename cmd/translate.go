@@ -4,8 +4,6 @@ Copyright © 2025 Alireza Arzehgar <alirezaarzehgar82@gmail.com>
 package cmd
 
 import (
-	"log"
-
 	"github.com/alirezaarzehgar/iflashc/internal/gui"
 	"github.com/alirezaarzehgar/iflashc/internal/translate"
 	"github.com/spf13/cobra"
@@ -18,17 +16,20 @@ func generalTranslate(translator translate.Translator) {
 	c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
 	selectedText, err := c.PasteText()
 	if err != nil {
-		log.Fatal("unable copying selected text", err)
+		gui.ShowWord("ERROR", "**unable copying the text**: "+err.Error())
+		return
 	}
 
 	response, err := translator.Translate(selectedText)
 	if err != nil {
-		log.Fatal("unable translating the word:", err)
+		gui.ShowWord("ERROR", err.Error())
+		return
 	}
 
 	err = gui.ShowWord(selectedText, response)
 	if err != nil {
-		log.Fatal("unable show message:", err)
+		gui.ShowWord("ERROR", err.Error())
+		return
 	}
 }
 
