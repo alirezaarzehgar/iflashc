@@ -114,13 +114,13 @@ type TranslationResponse struct {
 	Meanings    []string `json:"meanings"`
 }
 
-type grok struct {
+type groq struct {
 	To       string
 	LlmModel string
 	ApiKey   string
 }
 
-func (g grok) Translate(text string) (string, error) {
+func (g groq) Translate(text string) (string, error) {
 	prompt := `Translate and provide detailed information for the term/phrase <<%s>> into %s.  
 
 The output must be a well-structured JSON object with the following fields:  

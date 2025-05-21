@@ -42,14 +42,14 @@ var translateCmd = &cobra.Command{
 	},
 }
 
-var grokApiKey, grokLlmModel string
+var groqApiKey, groqLlmModel string
 
-var grokCmd = &cobra.Command{
-	Use:   "grok",
-	Short: "translate using grok",
+var groqCmd = &cobra.Command{
+	Use:   "groq",
+	Short: "translate using groq",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{To: "fa", ApiKey: grokApiKey, LLMmodel: grokLlmModel}
-		generalTranslate(translate.New("grok", cfg))
+		cfg := translate.TranslatorConfig{To: "fa", ApiKey: groqApiKey, LLMmodel: groqLlmModel}
+		generalTranslate(translate.New("groq", cfg))
 	},
 }
 
@@ -65,10 +65,10 @@ var googleCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(translateCmd)
 	translateCmd.PersistentFlags().StringVar(&transType, "tt", "google", "Set translation type")
-	translateCmd.AddCommand(grokCmd, googleCmd)
+	translateCmd.AddCommand(groqCmd, googleCmd)
 
-	grokCmd.PersistentFlags().StringVar(&grokApiKey, "api-key", "", "API Key for Grok")
-	grokCmd.PersistentFlags().StringVar(&grokLlmModel, "llm-model", "", "LLM Model name for Grok")
-	grokCmd.MarkPersistentFlagRequired("api-key")
-	grokCmd.MarkPersistentFlagRequired("llm-model")
+	groqCmd.PersistentFlags().StringVar(&groqApiKey, "api-key", "", "API Key for groq")
+	groqCmd.PersistentFlags().StringVar(&groqLlmModel, "llm-model", "", "LLM Model name for groq")
+	groqCmd.MarkPersistentFlagRequired("api-key")
+	groqCmd.MarkPersistentFlagRequired("llm-model")
 }
