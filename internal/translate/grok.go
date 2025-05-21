@@ -121,14 +121,20 @@ type grok struct {
 }
 
 func (g grok) Translate(text string) (string, error) {
-	prompt := `translate <<%s>> to %s with extra informations.
-The output must follow this exact JSON structure.
-Output JSON format:
-{
-	"definitions": ["define the word or sentence in English", ...],
-	"synonyms": ["list of synonyms in English", ...],
-	"examples": ["a sentence with that word in English", ...],
-	"meanings": ["meaning in %s", ...]
+	prompt := `Translate and provide detailed information for the term/phrase <<%s>> into %s.  
+
+The output must be a well-structured JSON object with the following fields:  
+1. **Definitions**: Clear and concise English definitions of the term/phrase.  
+2. **Synonyms**: A list of relevant English synonyms (if applicable).  
+3. **Examples**: Example sentences in English demonstrating proper usage.  
+4. **Meanings**: Accurate translations and meanings in the target language (%s).
+
+### Output Format (Strict JSON):    
+{  
+  "definitions": ["definition_1", "definition_2", ...],  
+  "synonyms": ["synonym_1", "synonym_2", ...],  
+  "examples": ["example_sentence_1", "example_sentence_2", ...],  
+  "meanings": ["translation_1_in_target_language", "translation_2_in_target_language", ...]  
 }
 `
 	resp, err := talkToGroq(fmt.Sprintf(prompt, text, g.To, g.To), g.LlmModel, g.ApiKey)
