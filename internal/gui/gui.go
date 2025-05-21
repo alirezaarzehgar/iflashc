@@ -17,6 +17,7 @@ const (
 func ShowWord(title, text string) error {
 	a := app.New()
 	w := a.NewWindow("Integrated Flashcard")
+	w.Resize(fyne.NewSize(500, 0))
 	w.SetFixedSize(true)
 
 	if len(title) > MaxTitleLen {
@@ -28,6 +29,7 @@ func ShowWord(title, text string) error {
 	l.Alignment = fyne.TextAlignCenter
 
 	rt := widget.NewRichTextFromMarkdown(text)
+	rt.Wrapping = fyne.TextWrapBreak
 	btn := widget.NewButton("store", func() {
 		a.Quit()
 	})
