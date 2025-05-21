@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"log"
-	"os"
 
 	"github.com/alirezaarzehgar/iflashc/internal/gui"
 	"github.com/alirezaarzehgar/iflashc/internal/translate"
@@ -15,31 +14,60 @@ import (
 
 var transType string
 
-// translateCmd represents the translate command
+func generalTranslate(translator translate.Translator) {
+	c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
+	selectedText, err := c.PasteText()
+	if err != nil {
+		log.Fatal("unable copying selected text", err)
+	}
+
+	response, err := translator.Translate(selectedText)
+	if err != nil {
+		log.Fatal("unable translating the word:", err)
+	}
+
+	err = gui.ShowWord(selectedText, response)
+	if err != nil {
+		log.Fatal("unable show message:", err)
+	}
+}
+
 var translateCmd = &cobra.Command{
 	Use:   "translate",
 	Short: "translate selected text",
 	Run: func(cmd *cobra.Command, args []string) {
-		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
-		selectedText, err := c.PasteText()
-		if err != nil {
-			log.Fatal("unable copying selected text", err)
-		}
+		cfg := translate.TranslatorConfig{To: "fa"}
+		generalTranslate(translate.New("google", cfg))
+	},
+}
 
-		cfg := translate.TranslatorConfig{To: "fa", ApiKey: os.Getenv("GROK_API_KEY"), LLMmodel: os.Getenv("GROK_LLM_MODEL")}
-		response, err := translate.New(transType, cfg).Translate(selectedText)
-		if err != nil {
-			log.Fatal("unable translating the word:", err)
-		}
+var grokApiKey, grokLlmModel string
 
-		err = gui.ShowWord(selectedText, response)
-		if err != nil {
-			log.Fatal("unable show message:", err)
-		}
+var grokCmd = &cobra.Command{
+	Use:   "grok",
+	Short: "translate using grok",
+	Run: func(cmd *cobra.Command, args []string) {
+		cfg := translate.TranslatorConfig{To: "fa", ApiKey: grokApiKey, LLMmodel: grokLlmModel}
+		generalTranslate(translate.New("grok", cfg))
+	},
+}
+
+var googleCmd = &cobra.Command{
+	Use:   "google",
+	Short: "translate using google translate",
+	Run: func(cmd *cobra.Command, args []string) {
+		cfg := translate.TranslatorConfig{To: "fa"}
+		generalTranslate(translate.New("google", cfg))
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(translateCmd)
 	translateCmd.PersistentFlags().StringVar(&transType, "tt", "google", "Set translation type")
+	translateCmd.AddCommand(grokCmd, googleCmd)
+
+	grokCmd.PersistentFlags().StringVar(&grokApiKey, "api-key", "", "API Key for Grok")
+	grokCmd.PersistentFlags().StringVar(&grokLlmModel, "llm-model", "", "LLM Model name for Grok")
+	grokCmd.MarkPersistentFlagRequired("api-key")
+	grokCmd.MarkPersistentFlagRequired("llm-model")
 }
