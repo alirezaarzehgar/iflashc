@@ -10,11 +10,18 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+const (
+	MaxTitleLen = 45
+)
+
 func ShowWord(title, text string) error {
 	a := app.New()
 	w := a.NewWindow("Integrated Flashcard")
 	w.SetFixedSize(true)
-	w.Resize(fyne.NewSize(300, 300))
+
+	if len(title) > MaxTitleLen {
+		title = title[:MaxTitleLen]
+	}
 
 	l := canvas.NewText(title, color.White)
 	l.TextSize = 35
@@ -25,7 +32,6 @@ func ShowWord(title, text string) error {
 		a.Quit()
 	})
 
-	w.CenterOnScreen()
 	w.SetContent(container.NewVBox(l, rt, btn))
 	w.ShowAndRun()
 	return nil
