@@ -18,7 +18,7 @@ func (g google) Translate(text string) (string, error) {
 		return "", err
 	}
 
-	response := t.Text + "\n"
+	response := "## " + t.Text + "\n"
 	if t.Pronunciation != nil {
 		response += *t.Pronunciation + "\n"
 	}
