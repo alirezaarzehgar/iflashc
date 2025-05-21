@@ -48,7 +48,7 @@ var translateCmd = &cobra.Command{
 	Short: "translate selected text",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := translate.TranslatorConfig{To: "fa"}
-		generalTranslate(translate.New("google", cfg))
+		generalTranslate(translate.New(translate.TypeGoogle, cfg))
 	},
 }
 
@@ -59,7 +59,7 @@ var groqCmd = &cobra.Command{
 	Short: "translate using groq",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := translate.TranslatorConfig{To: "fa", ApiKey: groqApiKey, LLMmodel: groqLlmModel}
-		generalTranslate(translate.New("groq", cfg))
+		generalTranslate(translate.New(translate.TypeGroq, cfg))
 	},
 }
 
@@ -68,14 +68,22 @@ var googleCmd = &cobra.Command{
 	Short: "translate using google translate",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := translate.TranslatorConfig{To: "fa"}
-		generalTranslate(translate.New("google", cfg))
+		generalTranslate(translate.New(translate.TypeGoogle, cfg))
+	},
+}
+
+var dictapi = &cobra.Command{
+	Use:   "dictapi",
+	Short: "translate using dictionaryapi.dev",
+	Run: func(cmd *cobra.Command, args []string) {
+		generalTranslate(translate.New(translate.TypeDictionaryApi, translate.TranslatorConfig{}))
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(translateCmd)
 	translateCmd.PersistentFlags().StringVar(&transType, "tt", "google", "Set translation type")
-	translateCmd.AddCommand(groqCmd, googleCmd)
+	translateCmd.AddCommand(groqCmd, googleCmd, dictapi)
 	translateCmd.PersistentFlags().StringVar(&groqLlmModel, "socks5", "", "Socks5 proxy for all requests")
 
 	groqCmd.PersistentFlags().StringVar(&groqApiKey, "api-key", "", "API Key for groq")

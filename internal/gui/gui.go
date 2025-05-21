@@ -17,7 +17,7 @@ const (
 func ShowWord(title, text string) error {
 	a := app.New()
 	w := a.NewWindow("Integrated Flashcard")
-	w.Resize(fyne.NewSize(500, 0))
+	w.Resize(fyne.NewSize(600, 0))
 	w.SetFixedSize(true)
 
 	if len(title) > MaxTitleLen {
