@@ -13,7 +13,7 @@ import (
 	"github.com/tiagomelo/go-clipboard/clipboard"
 )
 
-var transType string
+var destLang string
 
 func generalTranslate(translator translate.Translator) {
 	c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
@@ -47,7 +47,7 @@ var translateCmd = &cobra.Command{
 	Use:   "translate",
 	Short: "translate selected text",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{To: "fa"}
+		cfg := translate.TranslatorConfig{To: destLang}
 		generalTranslate(translate.New(translate.TypeGoogle, cfg))
 	},
 }
@@ -58,7 +58,7 @@ var groqCmd = &cobra.Command{
 	Use:   "groq",
 	Short: "translate using groq",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{To: "fa", ApiKey: groqApiKey, LLMmodel: groqLlmModel}
+		cfg := translate.TranslatorConfig{To: destLang, ApiKey: groqApiKey, LLMmodel: groqLlmModel}
 		generalTranslate(translate.New(translate.TypeGroq, cfg))
 	},
 }
@@ -67,7 +67,7 @@ var googleCmd = &cobra.Command{
 	Use:   "google",
 	Short: "translate using google translate",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{To: "fa"}
+		cfg := translate.TranslatorConfig{To: destLang}
 		generalTranslate(translate.New(translate.TypeGoogle, cfg))
 	},
 }
@@ -82,9 +82,10 @@ var dictapi = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(translateCmd)
-	translateCmd.PersistentFlags().StringVar(&transType, "tt", "google", "Set translation type")
-	translateCmd.AddCommand(groqCmd, googleCmd, dictapi)
+	translateCmd.AddCommand(groqCmd, groqAnalyzerCmd, googleCmd, dictapi)
+
 	translateCmd.PersistentFlags().StringVar(&groqLlmModel, "socks5", "", "Socks5 proxy for all requests")
+	translateCmd.PersistentFlags().StringVar(&destLang, "dest-lang", "fa", "Destination language")
 
 	groqCmd.PersistentFlags().StringVar(&groqApiKey, "api-key", "", "API Key for groq")
 	groqCmd.PersistentFlags().StringVar(&groqLlmModel, "llm-model", "", "LLM Model name for groq")
