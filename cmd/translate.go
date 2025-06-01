@@ -6,6 +6,7 @@ package cmd
 import (
 	"net/http"
 
+	"fyne.io/fyne/v2"
 	"github.com/alirezaarzehgar/iflashc/internal/gui"
 	"github.com/alirezaarzehgar/iflashc/internal/setproxy"
 	"github.com/alirezaarzehgar/iflashc/internal/translate"
@@ -19,7 +20,7 @@ func generalTranslate(translator translate.Translator) {
 	c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
 	selectedText, err := c.PasteText()
 	if err != nil {
-		gui.ShowWord("ERROR", "**unable copying the text**: "+err.Error())
+		gui.ShowText(gui.TextBox{Title: "failed to paste", Text: err.Error()})
 		return
 	}
 
@@ -32,14 +33,13 @@ func generalTranslate(translator translate.Translator) {
 
 	response, err := translator.Translate(selectedText)
 	if err != nil {
-		gui.ShowWord("ERROR", err.Error())
+		gui.ShowText(gui.TextBox{Title: "failed to translate", Text: err.Error()})
 		return
 	}
 
-	err = gui.ShowWord(selectedText, response)
+	err = gui.ShowText(gui.TextBox{Title: selectedText, Text: response, HaveBtn: true})
 	if err != nil {
-		gui.ShowWord("ERROR", err.Error())
-		return
+		gui.ShowText(gui.TextBox{Title: "unable showing on text box", Text: err.Error()})
 	}
 }
 
@@ -80,9 +80,46 @@ var dictapi = &cobra.Command{
 	},
 }
 
+func generalAnalyzer(translator translate.Translator) {
+	c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
+	selectedText, err := c.PasteText()
+	if err != nil {
+		gui.ShowText(gui.TextBox{Title: "failed to paste", Text: err.Error()})
+		return
+	}
+
+	if groqSocks5 != "" {
+		client, err := setproxy.NewSocks5Client(groqSocks5, nil)
+		if err == nil {
+			http.DefaultClient = client
+		}
+	}
+
+	response, err := translator.Translate(selectedText)
+	if err != nil {
+		gui.ShowText(gui.TextBox{Title: "failed to translate", Text: err.Error()})
+		return
+	}
+
+	gui.DefaultWindowSize = fyne.NewSize(800, 0)
+	err = gui.ShowText(gui.TextBox{Title: "Analyzer", Text: response})
+	if err != nil {
+		gui.ShowText(gui.TextBox{Title: "unable showing on text box", Text: err.Error()})
+	}
+}
+
+var groqAnalyzeCmd = &cobra.Command{
+	Use:   "groq-analyze",
+	Short: "analyze text using groq",
+	Run: func(cmd *cobra.Command, args []string) {
+		cfg := translate.TranslatorConfig{ApiKey: groqApiKey, LLMmodel: groqLlmModel}
+		generalAnalyzer(translate.New(translate.TypeGroqAlayzer, cfg))
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(translateCmd)
-	translateCmd.AddCommand(groqCmd, groqAnalyzerCmd, googleCmd, dictapi)
+	translateCmd.AddCommand(groqCmd, groqAnalyzeCmd, googleCmd, dictapi)
 
 	translateCmd.PersistentFlags().StringVar(&groqLlmModel, "socks5", "", "Socks5 proxy for all requests")
 	translateCmd.PersistentFlags().StringVar(&destLang, "dest-lang", "fa", "Destination language")
@@ -91,4 +128,9 @@ func init() {
 	groqCmd.PersistentFlags().StringVar(&groqLlmModel, "llm-model", "", "LLM Model name for groq")
 	groqCmd.MarkPersistentFlagRequired("api-key")
 	groqCmd.MarkPersistentFlagRequired("llm-model")
+
+	groqAnalyzeCmd.PersistentFlags().StringVar(&groqApiKey, "api-key", "", "API Key for groq")
+	groqAnalyzeCmd.PersistentFlags().StringVar(&groqLlmModel, "llm-model", "", "LLM Model name for groq")
+	groqAnalyzeCmd.MarkPersistentFlagRequired("api-key")
+	groqAnalyzeCmd.MarkPersistentFlagRequired("llm-model")
 }

@@ -5,8 +5,11 @@ go 1.24
 require (
 	fyne.io/fyne/v2 v2.6.1
 	github.com/gilang-as/google-translate v0.1.1
+	github.com/javad-majidi/farsi-reshaper v1.0.1
 	github.com/spf13/cobra v1.9.1
 	github.com/tiagomelo/go-clipboard v0.1.2
+	golang.org/x/net v0.35.0
+	golang.org/x/text v0.22.0
 )
 
 require (
@@ -34,6 +37,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.5.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f // indirect
 	github.com/rymdport/portal v0.4.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
@@ -41,8 +45,7 @@ require (
 	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
 	golang.org/x/image v0.24.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

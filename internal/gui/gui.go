@@ -14,27 +14,48 @@ const (
 	MaxTitleLen = 45
 )
 
-func ShowWord(title, text string) error {
+var (
+	DefaultTitleSize   float32   = 35
+	DefaultButtonLabel string    = "Store"
+	DefaultWindowSize  fyne.Size = fyne.NewSize(600, 0)
+)
+
+type TextBox struct {
+	Title, Text string
+	HaveBtn     bool
+}
+
+func ShowText(tb TextBox) error {
 	a := app.New()
 	w := a.NewWindow("Integrated Flashcard")
-	w.Resize(fyne.NewSize(600, 0))
+	w.Resize(DefaultWindowSize)
 	w.SetFixedSize(true)
 
-	if len(title) > MaxTitleLen {
-		title = title[:MaxTitleLen]
+	if len(tb.Title) > MaxTitleLen {
+		tb.Title = tb.Title[:MaxTitleLen]
 	}
 
-	l := canvas.NewText(title, color.White)
-	l.TextSize = 35
+	l := canvas.NewText(tb.Title, color.White)
+	l.TextSize = DefaultTitleSize
 	l.Alignment = fyne.TextAlignCenter
 
-	rt := widget.NewRichTextFromMarkdown(text)
+	rt := widget.NewRichTextFromMarkdown(tb.Text)
 	rt.Wrapping = fyne.TextWrapBreak
-	btn := widget.NewButton("store", func() {
+
+	btn := widget.NewButton(DefaultButtonLabel, func() {
+		a.Quit()
+	})
+	qbtn := widget.NewButton("Quit", func() {
 		a.Quit()
 	})
 
-	w.SetContent(container.NewVBox(l, rt, btn))
+	vbox := container.NewVBox(l, rt, qbtn)
+
+	if tb.HaveBtn {
+		vbox.Add(btn)
+	}
+
+	w.SetContent(vbox)
 	w.ShowAndRun()
 	return nil
 }
