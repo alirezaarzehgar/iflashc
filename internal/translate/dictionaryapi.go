@@ -49,7 +49,6 @@ func (d dictionaryapi) Translate(word string) (string, error) {
 	}
 
 	meanings := dictapiRes[0].Meanings[0]
-	fmt.Printf("%+v\n\n", meanings)
 
 	t := template.New("trans table")
 	t.Parse(`
