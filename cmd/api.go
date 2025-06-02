@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	apisConfig struct {
+	apiConfig struct {
 		destLang     string
 		groqApiKey   string
 		groqLlmModel string
@@ -31,8 +31,8 @@ func generalTranslate(translator translate.Translator) {
 		return
 	}
 
-	if apisConfig.groqSocks5 != "" {
-		client, err := setproxy.NewSocks5Client(apisConfig.groqSocks5, nil)
+	if apiConfig.groqSocks5 != "" {
+		client, err := setproxy.NewSocks5Client(apiConfig.groqSocks5, nil)
 		if err == nil {
 			http.DefaultClient = client
 		}
@@ -50,11 +50,11 @@ func generalTranslate(translator translate.Translator) {
 	}
 }
 
-var apisCmd = &cobra.Command{
-	Use:   "apis",
+var apiCmd = &cobra.Command{
+	Use:   "api",
 	Short: "translate selected text based on customized apis",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{To: apisConfig.destLang}
+		cfg := translate.TranslatorConfig{To: apiConfig.destLang}
 		generalTranslate(translate.New(translate.TypeGoogle, cfg))
 	},
 }
@@ -63,7 +63,7 @@ var groqCmd = &cobra.Command{
 	Use:   "groq",
 	Short: "translate using groq",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{To: apisConfig.destLang, ApiKey: apisConfig.groqApiKey, LLMmodel: apisConfig.groqLlmModel}
+		cfg := translate.TranslatorConfig{To: apiConfig.destLang, ApiKey: apiConfig.groqApiKey, LLMmodel: apiConfig.groqLlmModel}
 		generalTranslate(translate.New(translate.TypeGroq, cfg))
 	},
 }
@@ -72,7 +72,7 @@ var googleCmd = &cobra.Command{
 	Use:   "google",
 	Short: "translate using google translate",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{To: apisConfig.destLang}
+		cfg := translate.TranslatorConfig{To: apiConfig.destLang}
 		generalTranslate(translate.New(translate.TypeGoogle, cfg))
 	},
 }
@@ -93,8 +93,8 @@ func generalAnalyzer(translator translate.Translator) {
 		return
 	}
 
-	if apisConfig.groqSocks5 != "" {
-		client, err := setproxy.NewSocks5Client(apisConfig.groqSocks5, nil)
+	if apiConfig.groqSocks5 != "" {
+		client, err := setproxy.NewSocks5Client(apiConfig.groqSocks5, nil)
 		if err == nil {
 			http.DefaultClient = client
 		}
@@ -117,25 +117,25 @@ var groqAnalyzeCmd = &cobra.Command{
 	Use:   "groq-analyze",
 	Short: "analyze text using groq",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{ApiKey: apisConfig.groqApiKey, LLMmodel: apisConfig.groqLlmModel}
+		cfg := translate.TranslatorConfig{ApiKey: apiConfig.groqApiKey, LLMmodel: apiConfig.groqLlmModel}
 		generalAnalyzer(translate.New(translate.TypeGroqAlayzer, cfg))
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(apisCmd)
-	apisCmd.AddCommand(groqCmd, groqAnalyzeCmd, googleCmd, dictapi)
+	rootCmd.AddCommand(apiCmd)
+	apiCmd.AddCommand(groqCmd, groqAnalyzeCmd, googleCmd, dictapi)
 
-	apisCmd.PersistentFlags().StringVar(&apisConfig.groqLlmModel, "socks5", "", "Socks5 proxy for all requests")
-	apisCmd.PersistentFlags().StringVar(&apisConfig.destLang, "dest-lang", "fa", "Destination language")
+	apiCmd.PersistentFlags().StringVar(&apiConfig.groqLlmModel, "socks5", "", "Socks5 proxy for all requests")
+	apiCmd.PersistentFlags().StringVar(&apiConfig.destLang, "dest-lang", "fa", "Destination language")
 
-	groqCmd.PersistentFlags().StringVar(&apisConfig.groqApiKey, "api-key", "", "API Key for groq")
-	groqCmd.PersistentFlags().StringVar(&apisConfig.groqLlmModel, "llm-model", "", "LLM Model name for groq")
+	groqCmd.PersistentFlags().StringVar(&apiConfig.groqApiKey, "api-key", "", "API Key for groq")
+	groqCmd.PersistentFlags().StringVar(&apiConfig.groqLlmModel, "llm-model", "", "LLM Model name for groq")
 	groqCmd.MarkPersistentFlagRequired("api-key")
 	groqCmd.MarkPersistentFlagRequired("llm-model")
 
-	groqAnalyzeCmd.PersistentFlags().StringVar(&apisConfig.groqApiKey, "api-key", "", "API Key for groq")
-	groqAnalyzeCmd.PersistentFlags().StringVar(&apisConfig.groqLlmModel, "llm-model", "", "LLM Model name for groq")
+	groqAnalyzeCmd.PersistentFlags().StringVar(&apiConfig.groqApiKey, "api-key", "", "API Key for groq")
+	groqAnalyzeCmd.PersistentFlags().StringVar(&apiConfig.groqLlmModel, "llm-model", "", "LLM Model name for groq")
 	groqAnalyzeCmd.MarkPersistentFlagRequired("api-key")
 	groqAnalyzeCmd.MarkPersistentFlagRequired("llm-model")
 }
