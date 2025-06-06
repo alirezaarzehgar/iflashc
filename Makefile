@@ -7,4 +7,7 @@ build:
 install:
 	install -oroot -groot -m 0775 ${BIN} /usr/bin
 
+sqlc-gen:
+	sqlc generate
+
 .PHONY: build install

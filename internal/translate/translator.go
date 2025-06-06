@@ -11,13 +11,13 @@ type TranslatorConfig struct {
 	ApiKey   string
 }
 
-type TransType int
+type TransType string
 
 const (
-	TypeGroq          TransType = iota
-	TypeGroqAlayzer             = iota
-	TypeGoogle                  = iota
-	TypeDictionaryApi           = iota
+	TypeGroq          = "groq"
+	TypeGroqAlayzer   = "groq_analyze"
+	TypeGoogle        = "google"
+	TypeDictionaryApi = "dictapi"
 )
 
 type Translator interface {

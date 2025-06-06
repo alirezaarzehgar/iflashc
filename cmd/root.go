@@ -17,24 +17,91 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
 	"os"
+	"path"
 
+	"github.com/alirezaarzehgar/iflashc/internal/config"
+	"github.com/alirezaarzehgar/iflashc/internal/gui"
+	"github.com/alirezaarzehgar/iflashc/internal/query"
+	"github.com/alirezaarzehgar/iflashc/internal/translate"
 	"github.com/spf13/cobra"
+	"github.com/tiagomelo/go-clipboard/clipboard"
+
+	_ "embed"
+
+	_ "modernc.org/sqlite"
+)
+
+var (
+	TranslateConfig struct {
+		dbPath            string
+		noDB              bool
+		SchemaDataQueries string
+	}
+
+	DefaultConfigs = config.Defaults{
+		Translator: translate.TypeDictionaryApi,
+		DestLang:   "fa",
+	}
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "iflashc",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "translate selected text",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Get selected text
+		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
+		selectedText, err := c.PasteText()
+		if err != nil {
+			gui.ShowText(gui.TextBox{Title: "failed to paste", Text: err.Error()})
+			return
+		}
+		_ = selectedText
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+		// Check & open database
+		ctx := context.Background()
+		db, err := sql.Open("sqlite", TranslateConfig.dbPath)
+		if err != nil {
+			gui.ShowText(gui.TextBox{Title: "failed to open local database", Text: err.Error()})
+			return
+		}
+		defer db.Close()
+
+		// Migrate if needed
+		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
+			schema, err := config.GetSchema(DefaultConfigs)
+			if err != nil {
+				gui.ShowText(gui.TextBox{Title: "failed to generate default config", Text: err.Error()})
+				return
+			}
+			_, err = db.ExecContext(ctx, schema)
+			if err != nil {
+				gui.ShowText(gui.TextBox{Title: "failed to migrate local database", Text: err.Error()})
+				return
+			}
+			fmt.Println("migrate")
+		}
+
+		// init sqlc queries
+		q := query.New(db)
+
+		// Get configuration
+		kv, _ := q.GetConfigs(ctx)
+		conf := config.ConfigToMap(kv)
+		fmt.Println(conf)
+
+		// Convert text to lower case
+		// Search in db and show first translator result on GUI; EXIT
+		// Translate text using all apis in parallel
+		// Save each response to database
+		// Block for configured translator response
+		// show first translator result on GUI
+
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -47,13 +114,7 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.iflashc.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&TranslateConfig.dbPath, "db", path.Join(os.Getenv("HOME"), ".iflashc.db"), "local database path")
+	// rootCmd.PersistentFlags().BoolVar(&translateConfig.noDB, "nodb", false, "disable database actions and operate using default values")
 }
