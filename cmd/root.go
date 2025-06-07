@@ -19,9 +19,11 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/alirezaarzehgar/iflashc/internal/config"
 	"github.com/alirezaarzehgar/iflashc/internal/gui"
@@ -83,7 +85,6 @@ var rootCmd = &cobra.Command{
 				gui.ShowText(gui.TextBox{Title: "failed to migrate local database", Text: err.Error()})
 				return
 			}
-			fmt.Println("migrate")
 		}
 
 		// init sqlc queries
@@ -91,16 +92,37 @@ var rootCmd = &cobra.Command{
 
 		// Get configuration
 		kv, _ := q.GetConfigs(ctx)
-		conf := config.ConfigToMap(kv)
-		fmt.Println(conf)
+		configs := config.ConfigToMap(kv)
+		fmt.Println(configs)
 
 		// Convert text to lower case
-		// Search in db and show first translator result on GUI; EXIT
-		// Translate text using all apis in parallel
-		// Save each response to database
-		// Block for configured translator response
-		// show first translator result on GUI
+		selectedText = strings.ToLower(selectedText)
 
+		// Search in db and show first configuredTranslator result on GUI; EXIT
+		configuredTranslator := configs[config.DefaultKeys.Translator]
+		explaination, err := q.FindMatchedWord(ctx, query.FindMatchedWordParams{Word: selectedText, Translator: configuredTranslator})
+		if !errors.Is(err, sql.ErrNoRows) {
+			gui.ShowText(gui.TextBox{Title: selectedText, Text: explaination})
+			return
+		}
+
+		// Translate text using all apis in parallel
+		cfg := translate.TranslatorConfig{}
+		translator := translate.New(translate.TransType(configuredTranslator), cfg)
+		explaination, err = translator.Translate(selectedText)
+		if err != nil {
+			gui.ShowText(gui.TextBox{Title: "failed to translate selected text", Text: err.Error()})
+			return
+		}
+
+		// Save each response to database
+		err = q.SaveWord(ctx, query.SaveWordParams{Word: selectedText, Exp: explaination, Translator: configuredTranslator})
+		if err != nil {
+			gui.ShowText(gui.TextBox{Title: "failed to save explanation", Text: err.Error()})
+			return
+		}
+
+		gui.ShowText(gui.TextBox{Title: selectedText, Text: explaination})
 	},
 }
 

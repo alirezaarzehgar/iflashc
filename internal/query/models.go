@@ -5,9 +5,9 @@
 package query
 
 type Dictionary struct {
-	Word string
-	Exp  string
-	Api  string
+	Word       string
+	Exp        string
+	Translator string
 }
 
 type Kvstore struct {

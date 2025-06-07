@@ -9,6 +9,22 @@ import (
 	"context"
 )
 
+const findMatchedWord = `-- name: FindMatchedWord :one
+SELECT exp FROM dictionary WHERE word = ? AND translator = ?
+`
+
+type FindMatchedWordParams struct {
+	Word       string
+	Translator string
+}
+
+func (q *Queries) FindMatchedWord(ctx context.Context, arg FindMatchedWordParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, findMatchedWord, arg.Word, arg.Translator)
+	var exp string
+	err := row.Scan(&exp)
+	return exp, err
+}
+
 const getConfigs = `-- name: GetConfigs :many
 SELECT key, value FROM kvstore
 `
@@ -34,4 +50,19 @@ func (q *Queries) GetConfigs(ctx context.Context) ([]Kvstore, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const saveWord = `-- name: SaveWord :exec
+INSERT INTO dictionary (word, exp, translator) VALUES (?, ?, ?)
+`
+
+type SaveWordParams struct {
+	Word       string
+	Exp        string
+	Translator string
+}
+
+func (q *Queries) SaveWord(ctx context.Context, arg SaveWordParams) error {
+	_, err := q.db.ExecContext(ctx, saveWord, arg.Word, arg.Exp, arg.Translator)
+	return err
 }

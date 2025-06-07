@@ -19,7 +19,7 @@ type Keys struct {
 }
 
 var (
-	defaultKeys = Keys{
+	DefaultKeys = Keys{
 		DestLang:   "dest_lang",
 		Socks5:     "proxy_socks5",
 		Translator: "translator",
@@ -53,7 +53,7 @@ INSERT INTO kvstore (key, value) VALUES ('{{ .Keys.DestLang }}', '{{ .Defaults.D
 		Keys     Keys
 	}{
 		Defaults: vals,
-		Keys:     defaultKeys,
+		Keys:     DefaultKeys,
 	}
 
 	res := bytes.NewBuffer([]byte{})
