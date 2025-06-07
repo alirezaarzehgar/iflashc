@@ -11,7 +11,7 @@ build: ${BIN}
 ${BIN}: ${SRC}
 		go build $(LDFLAGS) -o $@ .
 
-install:
+install: build
 	install -oroot -groot -m 0775 ${BIN} /usr/bin
 
 sqlc-gen:
