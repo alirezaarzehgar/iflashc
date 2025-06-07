@@ -15,7 +15,7 @@ type Keys struct {
 	Socks5     string
 	Translator string
 	GroqApiKey string
-	GroqModel  string
+	LLMmodel   string
 }
 
 var (
@@ -24,7 +24,7 @@ var (
 		Socks5:     "proxy_socks5",
 		Translator: "translator",
 		GroqApiKey: "groq_api_key",
-		GroqModel:  "groq_model",
+		LLMmodel:   "llm_model",
 	}
 )
 
