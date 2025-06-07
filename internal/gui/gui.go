@@ -2,6 +2,7 @@ package gui
 
 import (
 	"image/color"
+	"slices"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -30,6 +31,11 @@ func ShowText(tb TextBox) error {
 	w := a.NewWindow("Integrated Flashcard")
 	w.Resize(DefaultWindowSize)
 	w.SetFixedSize(true)
+	w.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
+		if slices.Contains([]fyne.KeyName{fyne.KeyEscape, fyne.KeyQ, fyne.KeyT, fyne.KeyG}, ke.Name) {
+			w.Close()
+		}
+	})
 
 	if len(tb.Title) > MaxTitleLen {
 		tb.Title = tb.Title[:MaxTitleLen]
@@ -42,20 +48,7 @@ func ShowText(tb TextBox) error {
 	rt := widget.NewRichTextFromMarkdown(tb.Text)
 	rt.Wrapping = fyne.TextWrapBreak
 
-	btn := widget.NewButton(DefaultButtonLabel, func() {
-		a.Quit()
-	})
-	qbtn := widget.NewButton("Quit", func() {
-		a.Quit()
-	})
-
-	vbox := container.NewVBox(l, rt, qbtn)
-
-	if tb.HaveBtn {
-		vbox.Add(btn)
-	}
-
-	w.SetContent(vbox)
+	w.SetContent(container.NewVBox(l, rt))
 	w.ShowAndRun()
 	return nil
 }
