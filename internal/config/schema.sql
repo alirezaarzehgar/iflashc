@@ -3,7 +3,7 @@ CREATE TABLE kvstore (
     value TEXT NOT NULL
 );
 CREATE TABLE dictionary (
-    word text PRIMARY KEY,
+    word text NOT NULL,
     exp text NOT NULL,
     translator text NOT NULL
 );
