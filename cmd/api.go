@@ -76,7 +76,7 @@ var groqCmd = &cobra.Command{
 	Use:   "groq",
 	Short: "translate using groq",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{To: apiConfig.destLang, ApiKey: apiConfig.groqApiKey, LLMmodel: apiConfig.groqLlmModel}
+		cfg := translate.TranslatorConfig{To: apiConfig.destLang, ApiKey: apiConfig.groqApiKey, GroqModel: apiConfig.groqLlmModel}
 		generalTranslate(translate.New(translate.TypeGroq, cfg))
 	},
 }
@@ -130,7 +130,7 @@ var groqAnalyzeCmd = &cobra.Command{
 	Use:   "groq-analyze",
 	Short: "analyze text using groq",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := translate.TranslatorConfig{ApiKey: apiConfig.groqApiKey, LLMmodel: apiConfig.groqLlmModel}
+		cfg := translate.TranslatorConfig{ApiKey: apiConfig.groqApiKey, GroqModel: apiConfig.groqLlmModel}
 		generalAnalyzer(translate.New(translate.TypeGroqAlayzer, cfg))
 	},
 }

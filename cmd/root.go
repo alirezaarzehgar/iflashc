@@ -107,9 +107,9 @@ var rootCmd = &cobra.Command{
 
 		// Translate text using all apis in parallel
 		cfg := translate.TranslatorConfig{
-			To:       configs[config.DefaultKeys.DestLang],
-			LLMmodel: configs[config.DefaultKeys.LLMmodel],
-			ApiKey:   configs[config.DefaultKeys.GroqApiKey],
+			To:        configs[config.DefaultKeys.DestLang],
+			GroqModel: configs[config.DefaultKeys.GroqModel],
+			ApiKey:    configs[config.DefaultKeys.GroqApiKey],
 		}
 		translator := translate.New(translate.TransType(configuredTranslator), cfg)
 		explaination, err = translator.Translate(selectedText)

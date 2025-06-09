@@ -6,9 +6,9 @@ import (
 )
 
 type TranslatorConfig struct {
-	To       string
-	LLMmodel string
-	ApiKey   string
+	To        string
+	GroqModel string
+	ApiKey    string
 }
 
 type TransType string
@@ -33,13 +33,13 @@ func New(t TransType, cfg TranslatorConfig) Translator {
 
 	switch t {
 	case TypeGroq:
-		return groq{To: nativeTargetLang, LlmModel: cfg.LLMmodel, ApiKey: cfg.ApiKey}
+		return groq{To: nativeTargetLang, LlmModel: cfg.GroqModel, ApiKey: cfg.ApiKey}
 	case TypeGoogle:
 		return google{To: cfg.To}
 	case TypeDictionaryApi:
 		return dictionaryapi{}
 	case TypeGroqAlayzer:
-		return groqAnalyzer{LlmModel: cfg.LLMmodel, ApiKey: cfg.ApiKey}
+		return groqAnalyzer{LlmModel: cfg.GroqModel, ApiKey: cfg.ApiKey}
 	}
 	return google{To: cfg.To}
 }
