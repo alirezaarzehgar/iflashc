@@ -56,7 +56,6 @@ var rootCmd = &cobra.Command{
 		uiManager := gui.NewGUI()
 		defer uiManager.Run()
 
-		// Get selected text
 		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
 		selectedText, err := c.PasteText()
 		if err != nil {
@@ -64,7 +63,6 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		// Check & open database
 		ctx := context.Background()
 		db, err := sql.Open("sqlite", TranslateConfig.dbPath)
 		if err != nil {
@@ -73,7 +71,6 @@ var rootCmd = &cobra.Command{
 		}
 		defer db.Close()
 
-		// Migrate if needed
 		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
 			schema, err := config.GetSchema(DefaultConfigs)
 			if err != nil {
@@ -87,17 +84,13 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		// init sqlc queries
 		q := query.New(db)
 
-		// Get configuration
 		kv, _ := q.GetConfigs(ctx)
 		configs := config.ConfigToMap(kv)
 
-		// Convert text to lower case
 		selectedText = strings.ToLower(selectedText)
 
-		// Search in db and show first configuredTranslator result on GUI; EXIT
 		configuredTranslator := configs[config.DefaultKeys.Translator]
 		explaination, err := q.FindMatchedWord(ctx, query.FindMatchedWordParams{Word: selectedText, Translator: configuredTranslator})
 		if err == nil {
@@ -105,7 +98,6 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		// Translate text using all apis in parallel
 		cfg := translate.TranslatorConfig{
 			To:        configs[config.DefaultKeys.DestLang],
 			GroqModel: configs[config.DefaultKeys.GroqModel],
@@ -118,7 +110,6 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		// Save each response to database
 		err = q.SaveWord(ctx, query.SaveWordParams{Word: selectedText, Exp: explaination, Translator: configuredTranslator})
 		if err != nil {
 			uiManager.ShowText(gui.TextBox{Title: "failed to save explanation", Text: err.Error()})
