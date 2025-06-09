@@ -16,9 +16,8 @@ const (
 )
 
 var (
-	DefaultTitleSize   float32   = 35
-	DefaultButtonLabel string    = "Store"
-	DefaultWindowSize  fyne.Size = fyne.NewSize(600, 0)
+	DefaultTitleSize  float32   = 35
+	DefaultWindowSize fyne.Size = fyne.NewSize(600, 0)
 )
 
 type TextBox struct {
