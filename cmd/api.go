@@ -57,7 +57,7 @@ func generalTranslate(translator translate.Translator) {
 		return
 	}
 
-	err = gui.ShowText(gui.TextBox{Title: selectedText, Text: response, HaveBtn: true})
+	err = gui.ShowText(gui.TextBox{Title: selectedText, Text: response})
 	if err != nil {
 		gui.ShowText(gui.TextBox{Title: "unable showing on text box", Text: err.Error()})
 	}

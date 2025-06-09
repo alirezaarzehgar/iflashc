@@ -19,8 +19,6 @@ package cmd
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -55,20 +53,22 @@ var rootCmd = &cobra.Command{
 	Use:   "iflashc",
 	Short: "translate selected text",
 	Run: func(cmd *cobra.Command, args []string) {
+		uiManager := gui.NewGUI()
+		defer uiManager.Run()
+
 		// Get selected text
 		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
 		selectedText, err := c.PasteText()
 		if err != nil {
-			gui.ShowText(gui.TextBox{Title: "failed to paste", Text: err.Error()})
+			uiManager.ShowText(gui.TextBox{Title: "failed to paste", Text: err.Error()})
 			return
 		}
-		_ = selectedText
 
 		// Check & open database
 		ctx := context.Background()
 		db, err := sql.Open("sqlite", TranslateConfig.dbPath)
 		if err != nil {
-			gui.ShowText(gui.TextBox{Title: "failed to open local database", Text: err.Error()})
+			uiManager.ShowText(gui.TextBox{Title: "failed to open local database", Text: err.Error()})
 			return
 		}
 		defer db.Close()
@@ -77,12 +77,12 @@ var rootCmd = &cobra.Command{
 		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
 			schema, err := config.GetSchema(DefaultConfigs)
 			if err != nil {
-				gui.ShowText(gui.TextBox{Title: "failed to generate default config", Text: err.Error()})
+				uiManager.ShowText(gui.TextBox{Title: "failed to generate default config", Text: err.Error()})
 				return
 			}
 			_, err = db.ExecContext(ctx, schema)
 			if err != nil {
-				gui.ShowText(gui.TextBox{Title: "failed to migrate local database", Text: err.Error()})
+				uiManager.ShowText(gui.TextBox{Title: "failed to migrate local database", Text: err.Error()})
 				return
 			}
 		}
@@ -93,7 +93,6 @@ var rootCmd = &cobra.Command{
 		// Get configuration
 		kv, _ := q.GetConfigs(ctx)
 		configs := config.ConfigToMap(kv)
-		fmt.Println(configs)
 
 		// Convert text to lower case
 		selectedText = strings.ToLower(selectedText)
@@ -101,8 +100,8 @@ var rootCmd = &cobra.Command{
 		// Search in db and show first configuredTranslator result on GUI; EXIT
 		configuredTranslator := configs[config.DefaultKeys.Translator]
 		explaination, err := q.FindMatchedWord(ctx, query.FindMatchedWordParams{Word: selectedText, Translator: configuredTranslator})
-		if !errors.Is(err, sql.ErrNoRows) {
-			gui.ShowText(gui.TextBox{Title: selectedText, Text: explaination})
+		if err == nil {
+			uiManager.ShowText(gui.TextBox{Title: selectedText, Text: explaination})
 			return
 		}
 
@@ -115,18 +114,18 @@ var rootCmd = &cobra.Command{
 		translator := translate.New(translate.TransType(configuredTranslator), cfg)
 		explaination, err = translator.Translate(selectedText)
 		if err != nil {
-			gui.ShowText(gui.TextBox{Title: "failed to translate selected text", Text: err.Error()})
+			uiManager.ShowText(gui.TextBox{Title: "failed to translate selected text", Text: err.Error()})
 			return
 		}
 
 		// Save each response to database
 		err = q.SaveWord(ctx, query.SaveWordParams{Word: selectedText, Exp: explaination, Translator: configuredTranslator})
 		if err != nil {
-			gui.ShowText(gui.TextBox{Title: "failed to save explanation", Text: err.Error()})
+			uiManager.ShowText(gui.TextBox{Title: "failed to save explanation", Text: err.Error()})
 			return
 		}
 
-		gui.ShowText(gui.TextBox{Title: selectedText, Text: explaination})
+		uiManager.ShowText(gui.TextBox{Title: selectedText, Text: explaination})
 	},
 }
 
