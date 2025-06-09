@@ -83,11 +83,17 @@ var (
 
 func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	w := g.app.NewWindow("Configration Manager")
-	w.Resize(fyne.NewSize(600, 600))
+	w.Resize(DefaultWindowSize)
 	w.SetFixedSize(true)
 
 	status := widget.NewLabel("nothing changed")
 	hboxConfig := container.NewVBox()
+
+	l := canvas.NewText("Configuration Manager", color.White)
+	l.TextSize = DefaultTitleSize
+	l.Alignment = fyne.TextAlignCenter
+
+	hboxConfig.Add(l)
 	hboxConfig.Add(container.NewCenter(status))
 
 	for _, k := range []string{
@@ -112,6 +118,10 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 		hbox := container.NewGridWithColumns(2, b, e)
 		hboxConfig.Add(hbox)
 	}
+
+	hboxConfig.Add(widget.NewButton("Quit", func() {
+		g.app.Quit()
+	}))
 
 	w.SetContent(hboxConfig)
 	w.Show()

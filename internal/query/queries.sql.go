@@ -10,16 +10,16 @@ import (
 )
 
 const changeConfig = `-- name: ChangeConfig :exec
-UPDATE kvstore SET value = ?  WHERE key = ?
+INSERT OR REPLACE INTO  kvstore (key, value) VALUES (?, ?)
 `
 
 type ChangeConfigParams struct {
-	Value string
 	Key   string
+	Value string
 }
 
 func (q *Queries) ChangeConfig(ctx context.Context, arg ChangeConfigParams) error {
-	_, err := q.db.ExecContext(ctx, changeConfig, arg.Value, arg.Key)
+	_, err := q.db.ExecContext(ctx, changeConfig, arg.Key, arg.Value)
 	return err
 }
 

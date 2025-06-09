@@ -8,4 +8,4 @@ SELECT exp FROM dictionary WHERE word = ? AND translator = ?;
 INSERT INTO dictionary (word, exp, translator) VALUES (?, ?, ?);
 
 -- name: ChangeConfig :exec
-UPDATE kvstore SET value = ?  WHERE key = ?;
+INSERT OR REPLACE INTO  kvstore (key, value) VALUES (?, ?);
