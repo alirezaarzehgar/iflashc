@@ -9,6 +9,8 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/alirezaarzehgar/iflashc/internal/config"
+	"github.com/alirezaarzehgar/iflashc/internal/query"
 )
 
 const (
@@ -60,4 +62,48 @@ func (g gui) ShowText(tb TextBox) {
 
 func (g gui) Run() {
 	g.app.Run()
+}
+
+func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
+	w := g.app.NewWindow("Dashboard")
+	w.Resize(fyne.NewSize(600, 600))
+	w.Show()
+}
+
+var (
+	configEntries = []string{
+		config.DefaultKeys.Translator,
+		config.DefaultKeys.GroqApiKey,
+		config.DefaultKeys.GroqModel,
+		config.DefaultKeys.DestLang,
+		config.DefaultKeys.Socks5,
+	}
+)
+
+func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
+	w := g.app.NewWindow("Configration Manager")
+	w.Resize(fyne.NewSize(600, 600))
+	w.SetFixedSize(true)
+
+	hboxConfig := container.NewVBox()
+
+	for _, k := range []string{
+		config.DefaultKeys.Translator,
+		config.DefaultKeys.DestLang,
+		config.DefaultKeys.GroqApiKey,
+		config.DefaultKeys.GroqModel,
+		config.DefaultKeys.Socks5,
+	} {
+		e := widget.NewEntry()
+		e.Text = cfgs[k]
+
+		hbox := container.NewGridWithColumns(2,
+			widget.NewLabel(k),
+			e,
+		)
+		hboxConfig.Add(hbox)
+	}
+
+	w.SetContent(hboxConfig)
+	w.Show()
 }
