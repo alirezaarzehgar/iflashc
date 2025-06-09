@@ -9,6 +9,20 @@ import (
 	"context"
 )
 
+const changeConfig = `-- name: ChangeConfig :exec
+UPDATE kvstore SET value = ?  WHERE key = ?
+`
+
+type ChangeConfigParams struct {
+	Value string
+	Key   string
+}
+
+func (q *Queries) ChangeConfig(ctx context.Context, arg ChangeConfigParams) error {
+	_, err := q.db.ExecContext(ctx, changeConfig, arg.Value, arg.Key)
+	return err
+}
+
 const findMatchedWord = `-- name: FindMatchedWord :one
 SELECT exp FROM dictionary WHERE word = ? AND translator = ?
 `

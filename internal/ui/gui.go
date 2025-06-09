@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"context"
 	"image/color"
 	"slices"
 
@@ -85,7 +86,9 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	w.Resize(fyne.NewSize(600, 600))
 	w.SetFixedSize(true)
 
+	status := widget.NewLabel("nothing changed")
 	hboxConfig := container.NewVBox()
+	hboxConfig.Add(container.NewCenter(status))
 
 	for _, k := range []string{
 		config.DefaultKeys.Translator,
@@ -96,11 +99,17 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	} {
 		e := widget.NewEntry()
 		e.Text = cfgs[k]
+		b := widget.NewButton(k, func() {
+			ctx := context.Background()
+			err := q.ChangeConfig(ctx, query.ChangeConfigParams{Key: k, Value: e.Text})
+			if err != nil {
+				status.SetText("failed to save config: " + err.Error())
+			} else {
+				status.SetText("config changed successfuly")
+			}
+		})
 
-		hbox := container.NewGridWithColumns(2,
-			widget.NewLabel(k),
-			e,
-		)
+		hbox := container.NewGridWithColumns(2, b, e)
 		hboxConfig.Add(hbox)
 	}
 

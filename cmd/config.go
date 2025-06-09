@@ -40,7 +40,6 @@ var configCmd = &cobra.Command{
 			gui.ShowText(ui.TextBox{Title: "failed to open local database", Text: err.Error()})
 			return
 		}
-		defer db.Close()
 
 		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
 			schema, err := config.GetSchema(DefaultConfigs)
