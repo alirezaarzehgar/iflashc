@@ -81,45 +81,45 @@ var (
 	}
 )
 
+type keyEntry map[string]*widget.Entry
+
 func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	w := g.app.NewWindow("Configration Manager")
 	w.Resize(DefaultWindowSize)
 	w.SetFixedSize(true)
 
-	status := widget.NewLabel("nothing changed")
 	hboxConfig := container.NewVBox()
 
 	l := canvas.NewText("Configuration Manager", color.White)
 	l.TextSize = DefaultTitleSize
 	l.Alignment = fyne.TextAlignCenter
-
 	hboxConfig.Add(l)
-	hboxConfig.Add(container.NewCenter(status))
 
-	for _, k := range []string{
-		config.DefaultKeys.Translator,
-		config.DefaultKeys.DestLang,
-		config.DefaultKeys.GroqApiKey,
-		config.DefaultKeys.GroqModel,
-		config.DefaultKeys.Socks5,
-	} {
+	keyEntries := keyEntry{}
+
+	for _, k := range configEntries {
 		e := widget.NewEntry()
 		e.Text = cfgs[k]
-		b := widget.NewButton(k, func() {
+		l := widget.NewLabel(k)
+		hbox := container.NewGridWithColumns(2, l, e)
+		hboxConfig.Add(hbox)
+		keyEntries[k] = e
+	}
+
+	hboxConfig.Add(widget.NewButton("Save & Exit", func() {
+		for _, k := range configEntries {
+			e := keyEntries[k]
+			if e.Text == cfgs[k] {
+				continue
+			}
+
 			ctx := context.Background()
 			err := q.ChangeConfig(ctx, query.ChangeConfigParams{Key: k, Value: e.Text})
 			if err != nil {
-				status.SetText("failed to save config: " + err.Error())
-			} else {
-				status.SetText("config changed successfuly")
+				g.ShowText(TextBox{Title: "Failed to change config", Text: err.Error()})
 			}
-		})
+		}
 
-		hbox := container.NewGridWithColumns(2, b, e)
-		hboxConfig.Add(hbox)
-	}
-
-	hboxConfig.Add(widget.NewButton("Quit", func() {
 		g.app.Quit()
 	}))
 
