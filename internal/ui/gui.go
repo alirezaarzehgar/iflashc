@@ -87,6 +87,11 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	w := g.app.NewWindow("Configration Manager")
 	w.Resize(DefaultWindowSize)
 	w.SetFixedSize(true)
+	w.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
+		if slices.Contains([]fyne.KeyName{fyne.KeyEscape}, ke.Name) {
+			w.Close()
+		}
+	})
 
 	hboxConfig := container.NewVBox()
 
