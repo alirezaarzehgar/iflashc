@@ -96,20 +96,20 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 
 	hboxConfig := container.NewVBox()
 
-	l := canvas.NewText("Configuration Manager", color.White)
-	l.TextSize = DefaultTitleSize
-	l.Alignment = fyne.TextAlignCenter
-	hboxConfig.Add(l)
+	label := canvas.NewText("Configuration Manager", color.White)
+	label.TextSize = DefaultTitleSize
+	label.Alignment = fyne.TextAlignCenter
+	hboxConfig.Add(label)
 
 	keyEntries := keyEntry{}
 
 	for _, k := range configEntries {
-		e := widget.NewEntry()
-		e.Text = cfgs[k]
-		l := widget.NewLabel(k)
-		hbox := container.NewGridWithColumns(2, l, e)
+		entry := widget.NewEntry()
+		entry.Text = cfgs[k]
+		label := widget.NewLabel(k)
+		hbox := container.NewGridWithColumns(2, label, entry)
 		hboxConfig.Add(hbox)
-		keyEntries[k] = e
+		keyEntries[k] = entry
 	}
 
 	hboxConfig.Add(widget.NewButton("Save & Exit", func() {
