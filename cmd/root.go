@@ -91,8 +91,10 @@ var rootCmd = &cobra.Command{
 
 		selectedText = strings.ToLower(selectedText)
 
-		configuredTranslator := configs[config.DefaultKeys.Translator]
-		explaination, err := q.FindMatchedWord(ctx, query.FindMatchedWordParams{Word: selectedText, Translator: configuredTranslator})
+		cfgTranslator := configs[config.DefaultKeys.Translator]
+		cfgLang := configs[config.DefaultKeys.DestLang]
+		cfgCtx := configs[config.DefaultKeys.Context]
+		explaination, err := q.FindMatchedWord(ctx, query.FindMatchedWordParams{Word: selectedText, Translator: cfgTranslator, Lang: cfgLang})
 		if err == nil {
 			gui.ShowText(ui.TextBox{Title: selectedText, Text: explaination})
 			return
@@ -103,14 +105,20 @@ var rootCmd = &cobra.Command{
 			GroqModel: configs[config.DefaultKeys.GroqModel],
 			ApiKey:    configs[config.DefaultKeys.GroqApiKey],
 		}
-		translator := translate.New(translate.TransType(configuredTranslator), cfg)
+		translator := translate.New(translate.TransType(cfgTranslator), cfg)
 		explaination, err = translator.Translate(selectedText)
 		if err != nil {
 			gui.ShowText(ui.TextBox{Title: "failed to translate selected text", Text: err.Error()})
 			return
 		}
 
-		err = q.SaveWord(ctx, query.SaveWordParams{Word: selectedText, Exp: explaination, Translator: configuredTranslator})
+		err = q.SaveWord(ctx, query.SaveWordParams{
+			Word:       selectedText,
+			Exp:        explaination,
+			Translator: cfgTranslator,
+			Lang:       cfgLang,
+			Context:    sql.NullString{String: cfgCtx, Valid: len(cfgCtx) > 0},
+		})
 		if err != nil {
 			gui.ShowText(ui.TextBox{Title: "failed to save explanation", Text: err.Error()})
 			return

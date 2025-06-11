@@ -7,6 +7,7 @@ package query
 
 import (
 	"context"
+	"database/sql"
 )
 
 const changeConfig = `-- name: ChangeConfig :exec
@@ -24,16 +25,17 @@ func (q *Queries) ChangeConfig(ctx context.Context, arg ChangeConfigParams) erro
 }
 
 const findMatchedWord = `-- name: FindMatchedWord :one
-SELECT exp FROM dictionary WHERE word = ? AND translator = ?
+SELECT exp FROM dictionary WHERE word = ? AND translator = ? AND lang = ?
 `
 
 type FindMatchedWordParams struct {
 	Word       string
 	Translator string
+	Lang       string
 }
 
 func (q *Queries) FindMatchedWord(ctx context.Context, arg FindMatchedWordParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, findMatchedWord, arg.Word, arg.Translator)
+	row := q.db.QueryRowContext(ctx, findMatchedWord, arg.Word, arg.Translator, arg.Lang)
 	var exp string
 	err := row.Scan(&exp)
 	return exp, err
@@ -67,16 +69,24 @@ func (q *Queries) GetConfigs(ctx context.Context) ([]Kvstore, error) {
 }
 
 const saveWord = `-- name: SaveWord :exec
-INSERT INTO dictionary (word, exp, translator) VALUES (?, ?, ?)
+INSERT INTO dictionary (word, exp, translator, lang, context) VALUES (?, ?, ?, ?, ?)
 `
 
 type SaveWordParams struct {
 	Word       string
 	Exp        string
 	Translator string
+	Lang       string
+	Context    sql.NullString
 }
 
 func (q *Queries) SaveWord(ctx context.Context, arg SaveWordParams) error {
-	_, err := q.db.ExecContext(ctx, saveWord, arg.Word, arg.Exp, arg.Translator)
+	_, err := q.db.ExecContext(ctx, saveWord,
+		arg.Word,
+		arg.Exp,
+		arg.Translator,
+		arg.Lang,
+		arg.Context,
+	)
 	return err
 }

@@ -5,6 +5,8 @@ CREATE TABLE kvstore (
 CREATE TABLE dictionary (
     word text NOT NULL,
     exp text NOT NULL,
-    translator text NOT NULL
+    lang text NOT NULL,
+    translator text NOT NULL,
+    context text
 );
 CREATE INDEX idx_dictionary_word ON dictionary(word);

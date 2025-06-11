@@ -74,6 +74,7 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 var (
 	configEntries = []string{
 		config.DefaultKeys.Translator,
+		config.DefaultKeys.Context,
 		config.DefaultKeys.GroqApiKey,
 		config.DefaultKeys.GroqModel,
 		config.DefaultKeys.DestLang,

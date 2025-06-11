@@ -12,6 +12,7 @@ import (
 
 type Keys struct {
 	DestLang   string
+	Context    string
 	Socks5     string
 	Translator string
 	GroqApiKey string
@@ -21,6 +22,7 @@ type Keys struct {
 var (
 	DefaultKeys = Keys{
 		DestLang:   "dest_lang",
+		Context:    "context",
 		Socks5:     "proxy_socks5",
 		Translator: "translator",
 		GroqApiKey: "groq_api_key",
