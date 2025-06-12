@@ -14,8 +14,6 @@ type Keys struct {
 	Context       string
 	Socks5        string
 	Translator    string
-	GroqApiKey    string
-	GroqModel     string
 	OpenAIApiKey  string
 	OpenAIBaseURL string
 	OpenAIModel   string
@@ -27,8 +25,6 @@ var (
 		Context:       "context",
 		Socks5:        "proxy_socks5",
 		Translator:    "translator",
-		GroqApiKey:    "groq_api_key",
-		GroqModel:     "groq_model",
 		OpenAIApiKey:  "openai_api_key",
 		OpenAIModel:   "openai_model",
 		OpenAIBaseURL: "openai_base_url",
@@ -41,9 +37,6 @@ var (
 		DefaultKeys.OpenAIModel,
 		DefaultKeys.OpenAIBaseURL,
 		DefaultKeys.DestLang,
-
-		DefaultKeys.GroqApiKey,
-		DefaultKeys.GroqModel,
 		DefaultKeys.Socks5,
 	}
 
@@ -60,8 +53,6 @@ type TransType string
 
 const (
 	TypeOpenAI        = "openai"
-	TypeGroq          = "groq"
-	TypeGroqAlayzer   = "groq_analyze"
 	TypeGoogle        = "google"
 	TypeDictionaryApi = "dictapi"
 )

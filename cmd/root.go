@@ -95,14 +95,6 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		// cfg := translate.TranslatorConfig{
-		// 	To:            configs[config.DefaultKeys.DestLang],
-		// 	GroqModel:     configs[config.DefaultKeys.GroqModel],
-		// 	OpenAIModel:   configs[config.DefaultKeys.OpenAIModel],
-		// 	OpenAIBaseURL: configs[config.DefaultKeys.OpenAIBaseURL],
-		// 	OpenAIApiKey:  configs[config.DefaultKeys.OpenAIApiKey],
-		// 	ApiKey:        configs[config.DefaultKeys.GroqApiKey],
-		// }
 		translator := translate.New(config.TransType(cfgTranslator), configs)
 		explaination, err = translator.Translate(selectedText)
 		if err != nil {

@@ -47,7 +47,6 @@ Output Format (Strict Markdown):
 
 	cfg := openai.DefaultConfig(oAi.ApiKey)
 	cfg.BaseURL = oAi.BaseURL
-	fmt.Println(cfg.BaseURL)
 	client := openai.NewClientWithConfig(cfg)
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
