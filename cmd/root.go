@@ -41,11 +41,6 @@ var (
 		noDB              bool
 		SchemaDataQueries string
 	}
-
-	DefaultConfigs = config.Defaults{
-		Translator: translate.TypeDictionaryApi,
-		DestLang:   "fa",
-	}
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -72,7 +67,7 @@ var rootCmd = &cobra.Command{
 		defer db.Close()
 
 		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
-			schema, err := config.GetSchema(DefaultConfigs)
+			schema, err := config.GetSchema()
 			if err != nil {
 				gui.ShowText(ui.TextBox{Title: "failed to generate default config", Text: err.Error()})
 				return
@@ -100,12 +95,15 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		cfg := translate.TranslatorConfig{
-			To:        configs[config.DefaultKeys.DestLang],
-			GroqModel: configs[config.DefaultKeys.GroqModel],
-			ApiKey:    configs[config.DefaultKeys.GroqApiKey],
-		}
-		translator := translate.New(translate.TransType(cfgTranslator), cfg)
+		// cfg := translate.TranslatorConfig{
+		// 	To:            configs[config.DefaultKeys.DestLang],
+		// 	GroqModel:     configs[config.DefaultKeys.GroqModel],
+		// 	OpenAIModel:   configs[config.DefaultKeys.OpenAIModel],
+		// 	OpenAIBaseURL: configs[config.DefaultKeys.OpenAIBaseURL],
+		// 	OpenAIApiKey:  configs[config.DefaultKeys.OpenAIApiKey],
+		// 	ApiKey:        configs[config.DefaultKeys.GroqApiKey],
+		// }
+		translator := translate.New(config.TransType(cfgTranslator), configs)
 		explaination, err = translator.Translate(selectedText)
 		if err != nil {
 			gui.ShowText(ui.TextBox{Title: "failed to translate selected text", Text: err.Error()})

@@ -44,6 +44,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f // indirect
 	github.com/rymdport/portal v0.4.1 // indirect
+	github.com/sashabaranov/go-openai v1.40.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect

@@ -43,7 +43,7 @@ var dictionaryCmd = &cobra.Command{
 		defer db.Close()
 
 		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
-			schema, err := config.GetSchema(DefaultConfigs)
+			schema, err := config.GetSchema()
 			if err != nil {
 				gui.ShowText(ui.TextBox{Title: "failed to generate default config", Text: err.Error()})
 				return

@@ -71,17 +71,6 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 	w.Show()
 }
 
-var (
-	configEntries = []string{
-		config.DefaultKeys.Translator,
-		config.DefaultKeys.Context,
-		config.DefaultKeys.GroqApiKey,
-		config.DefaultKeys.GroqModel,
-		config.DefaultKeys.DestLang,
-		config.DefaultKeys.Socks5,
-	}
-)
-
 type keyEntry map[string]*widget.Entry
 
 func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
@@ -103,7 +92,7 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 
 	keyEntries := keyEntry{}
 
-	for _, k := range configEntries {
+	for _, k := range config.ConfigEntries {
 		entry := widget.NewEntry()
 		entry.Text = cfgs[k]
 		label := widget.NewLabel(k)
@@ -113,7 +102,7 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	}
 
 	hboxConfig.Add(widget.NewButton("Save & Exit", func() {
-		for _, k := range configEntries {
+		for _, k := range config.ConfigEntries {
 			e := keyEntries[k]
 			if e.Text == cfgs[k] {
 				continue
