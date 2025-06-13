@@ -2,6 +2,7 @@ package ui
 
 import (
 	"context"
+	"fmt"
 	"image/color"
 	"slices"
 
@@ -9,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/alirezaarzehgar/iflashc/internal/config"
@@ -16,7 +18,8 @@ import (
 )
 
 const (
-	MaxTitleLen = 45
+	MaxTitleLen  = 45
+	NoContextKey = "No Context"
 )
 
 var (
@@ -40,7 +43,7 @@ func NewGUI() gui {
 	w.SetFixedSize(true)
 	w.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
 		if slices.Contains([]fyne.KeyName{fyne.KeyEscape, fyne.KeyQ, fyne.KeyT, fyne.KeyG}, ke.Name) {
-			w.Close()
+			a.Quit()
 		}
 	})
 	return gui{win: w, app: a}
@@ -121,6 +124,10 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 }
 
 func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
+	g.win.Resize(fyne.NewSize(800, 800))
+
+	searchQueryParams := query.ListStoredWordsParams{}
+	searchBind := binding.NewString()
 
 	ctx := context.Background()
 	languages, err := q.ListStoredLanguages(ctx)
@@ -129,12 +136,61 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 		return
 	}
 
-	langSelector := widget.NewSelect(languages, func(s string) {
-		dialog.ShowInformation(s, s, g.win)
-	})
+	contexts, err := q.ListStoredContexts(ctx)
+	if err != nil {
+		g.ShowError("failed to get languages from database", err)
+		return
+	}
 
-	mainPage := container.NewVBox(langSelector)
-	// wordPage := container.NewVBox()
+	// TODO "no context" should be filter on config
+	contextSelector := widget.NewSelect(contexts, func(s string) {
+		if s == NoContextKey {
+			s = ""
+		}
+		searchQueryParams.Context = s
+	})
+	if len(contexts) >= 1 {
+		contextSelector.SetSelected(contexts[0])
+	}
+
+	langSelector := widget.NewSelect(languages, func(s string) {
+		searchQueryParams.Lang = s
+	})
+	if len(languages) >= 1 {
+		langSelector.SetSelected(languages[0])
+	}
+
+	transSelector := widget.NewSelect(config.ConfigurableTranslators, func(s string) {
+		searchQueryParams.Translator = s
+	})
+	transSelector.SetSelected(config.ConfigurableTranslators[0])
+
+	searchEntry := widget.NewEntry()
+	searchEntry.PlaceHolder = "Search word"
+	searchEntry.Bind(searchBind)
+
+	wordList := container.NewVBox()
+	mainPage := container.NewVBox(
+		container.NewGridWithColumns(2,
+			container.NewGridWithRows(2, widget.NewLabel(""), searchEntry),
+			container.NewHBox(
+				container.NewVBox(widget.NewLabel("Languages:"), langSelector),
+				container.NewVBox(widget.NewLabel("Translators:"), transSelector),
+				container.NewVBox(widget.NewLabel("Contexts:"), contextSelector),
+			),
+		),
+		wordList,
+	)
+
+	searchBind.AddListener(binding.NewDataListener(func() {
+		ctx := context.Background()
+		searchQueryParams.WordLike, _ = searchBind.Get()
+		list, err := q.ListStoredWords(ctx, searchQueryParams)
+		if err != nil {
+			dialog.ShowError(err, g.win)
+		}
+		fmt.Printf("%+v, %+v\n", searchQueryParams, list)
+	}))
 
 	g.win.SetContent(mainPage)
 	g.win.Show()

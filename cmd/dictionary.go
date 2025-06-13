@@ -40,7 +40,6 @@ var dictionaryCmd = &cobra.Command{
 			gui.ShowError("failed to open local database", err)
 			return
 		}
-		defer db.Close()
 
 		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
 			schema, err := config.GetSchema()

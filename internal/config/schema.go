@@ -9,6 +9,14 @@ import (
 	"github.com/alirezaarzehgar/iflashc/internal/query"
 )
 
+type TransType string
+
+const (
+	TypeOpenAI        = "openai"
+	TypeGoogle        = "google"
+	TypeDictionaryApi = "dictapi"
+)
+
 type Keys struct {
 	DestLang      string
 	Context       string
@@ -30,6 +38,12 @@ var (
 		OpenAIBaseURL: "openai_base_url",
 	}
 
+	DefaultConfigs = Defaults{
+		Translator: TypeDictionaryApi,
+		DestLang:   "fa",
+		Context:    "default",
+	}
+
 	ConfigurableKeys = []string{
 		DefaultKeys.Translator,
 		DefaultKeys.Context,
@@ -40,32 +54,28 @@ var (
 		DefaultKeys.Socks5,
 	}
 
-	DefaultConfigs = Defaults{
-		Translator: TypeDictionaryApi,
-		DestLang:   "fa",
+	ConfigurableTranslators = []string{
+		TypeOpenAI,
+		TypeGoogle,
+		TypeDictionaryApi,
 	}
 )
 
 //go:embed schema.sql
 var schemaTemplate string
 
-type TransType string
-
-const (
-	TypeOpenAI        = "openai"
-	TypeGoogle        = "google"
-	TypeDictionaryApi = "dictapi"
-)
-
 type Defaults struct {
 	Translator TransType
 	DestLang   string
+	Context    string
 }
 
 func GetSchema() (string, error) {
 	schemaTemplate += `
-INSERT INTO kvstore (key, value) VALUES ('{{ .Keys.Translator }}', '{{ .Defaults.Translator }}');
-INSERT INTO kvstore (key, value) VALUES ('{{ .Keys.DestLang }}', '{{ .Defaults.DestLang }}');
+INSERT INTO kvstore (key, value) VALUES 
+('{{ .Keys.Translator }}', '{{ .Defaults.Translator }}'),
+('{{ .Keys.DestLang }}', '{{ .Defaults.DestLang }}'),
+('{{ .Keys.Context }}', '{{ .Defaults.Context }}');
 `
 
 	t := template.New("Schema")

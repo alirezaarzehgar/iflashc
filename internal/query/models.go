@@ -4,16 +4,12 @@
 
 package query
 
-import (
-	"database/sql"
-)
-
 type Dictionary struct {
 	Word       string
 	Exp        string
 	Lang       string
 	Translator string
-	Context    sql.NullString
+	Context    string
 }
 
 type Kvstore struct {

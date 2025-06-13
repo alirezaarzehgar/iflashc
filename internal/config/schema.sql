@@ -7,6 +7,6 @@ CREATE TABLE dictionary (
     exp text NOT NULL,
     lang text NOT NULL,
     translator text NOT NULL,
-    context text
+    context text NOT NULL
 );
 CREATE INDEX idx_dictionary_word ON dictionary(word);

@@ -7,7 +7,6 @@ package query
 
 import (
 	"context"
-	"database/sql"
 )
 
 const changeConfig = `-- name: ChangeConfig :exec
@@ -68,6 +67,33 @@ func (q *Queries) GetConfigs(ctx context.Context) ([]Kvstore, error) {
 	return items, nil
 }
 
+const listStoredContexts = `-- name: ListStoredContexts :many
+SELECT DISTINCT context FROM dictionary
+`
+
+func (q *Queries) ListStoredContexts(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listStoredContexts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var context string
+		if err := rows.Scan(&context); err != nil {
+			return nil, err
+		}
+		items = append(items, context)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listStoredLanguages = `-- name: ListStoredLanguages :many
 SELECT DISTINCT lang FROM dictionary
 `
@@ -95,6 +121,50 @@ func (q *Queries) ListStoredLanguages(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
+const listStoredWords = `-- name: ListStoredWords :many
+SELECT word, exp FROM dictionary WHERE translator = ? AND lang = ? AND context = ? AND  word LIKE CAST(?4 AS TEXT) || '%' COLLATE NOCASE
+`
+
+type ListStoredWordsParams struct {
+	Translator string
+	Lang       string
+	Context    string
+	WordLike   string
+}
+
+type ListStoredWordsRow struct {
+	Word string
+	Exp  string
+}
+
+func (q *Queries) ListStoredWords(ctx context.Context, arg ListStoredWordsParams) ([]ListStoredWordsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listStoredWords,
+		arg.Translator,
+		arg.Lang,
+		arg.Context,
+		arg.WordLike,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListStoredWordsRow
+	for rows.Next() {
+		var i ListStoredWordsRow
+		if err := rows.Scan(&i.Word, &i.Exp); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const saveWord = `-- name: SaveWord :exec
 INSERT INTO dictionary (word, exp, translator, lang, context) VALUES (?, ?, ?, ?, ?)
 `
@@ -104,7 +174,7 @@ type SaveWordParams struct {
 	Exp        string
 	Translator string
 	Lang       string
-	Context    sql.NullString
+	Context    string
 }
 
 func (q *Queries) SaveWord(ctx context.Context, arg SaveWordParams) error {

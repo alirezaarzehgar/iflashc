@@ -107,7 +107,7 @@ var rootCmd = &cobra.Command{
 			Exp:        explaination,
 			Translator: cfgTranslator,
 			Lang:       cfgLang,
-			Context:    sql.NullString{String: cfgCtx, Valid: len(cfgCtx) > 0},
+			Context:    cfgCtx,
 		})
 		if err != nil {
 			gui.ShowError("failed to save explanation", err)
