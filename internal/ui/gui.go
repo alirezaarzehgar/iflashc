@@ -2,7 +2,6 @@ package ui
 
 import (
 	"context"
-	"fmt"
 	"image/color"
 	"slices"
 
@@ -22,7 +21,7 @@ const (
 
 var (
 	DefaultTitleSize  float32   = 35
-	DefaultWindowSize fyne.Size = fyne.NewSize(600, 0)
+	DefaultWindowSize fyne.Size = fyne.NewSize(600, 200)
 )
 
 type TextBox struct {
@@ -68,7 +67,15 @@ func (g gui) Run() {
 }
 
 func (g gui) ShowError(text string, err error) {
-	dialog.ShowError(fmt.Errorf("%s: %w", text, err), g.win)
+	l := canvas.NewText(text, color.White)
+	l.TextSize = DefaultTitleSize
+	l.Alignment = fyne.TextAlignCenter
+
+	rt := widget.NewRichTextFromMarkdown(err.Error())
+	rt.Wrapping = fyne.TextWrapBreak
+
+	g.win.SetContent(container.NewPadded(container.NewVBox(l, rt)))
+	g.win.Show()
 }
 
 type keyEntry map[string]*widget.Entry

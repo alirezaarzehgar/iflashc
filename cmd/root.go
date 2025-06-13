@@ -54,14 +54,14 @@ var rootCmd = &cobra.Command{
 		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
 		selectedText, err := c.PasteText()
 		if err != nil {
-			gui.ShowText(ui.TextBox{Title: "failed to paste", Text: err.Error()})
+			gui.ShowError("failed to paste", err)
 			return
 		}
 
 		ctx := context.Background()
 		db, err := sql.Open("sqlite", TranslateConfig.dbPath)
 		if err != nil {
-			gui.ShowText(ui.TextBox{Title: "failed to open local database", Text: err.Error()})
+			gui.ShowError("failed to open local database", err)
 			return
 		}
 		defer db.Close()
@@ -69,12 +69,12 @@ var rootCmd = &cobra.Command{
 		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
 			schema, err := config.GetSchema()
 			if err != nil {
-				gui.ShowText(ui.TextBox{Title: "failed to generate default config", Text: err.Error()})
+				gui.ShowError("failed to generate default config", err)
 				return
 			}
 			_, err = db.ExecContext(ctx, schema)
 			if err != nil {
-				gui.ShowText(ui.TextBox{Title: "failed to migrate local database", Text: err.Error()})
+				gui.ShowError("failed to migrate local database", err)
 				return
 			}
 		}
@@ -98,7 +98,7 @@ var rootCmd = &cobra.Command{
 		translator := translate.New(config.TransType(cfgTranslator), configs)
 		explaination, err = translator.Translate(selectedText)
 		if err != nil {
-			gui.ShowText(ui.TextBox{Title: "failed to translate selected text", Text: err.Error()})
+			gui.ShowError("failed to translate selected text", err)
 			return
 		}
 
@@ -110,7 +110,7 @@ var rootCmd = &cobra.Command{
 			Context:    sql.NullString{String: cfgCtx, Valid: len(cfgCtx) > 0},
 		})
 		if err != nil {
-			gui.ShowText(ui.TextBox{Title: "failed to save explanation", Text: err.Error()})
+			gui.ShowError("failed to save explanation", err)
 			return
 		}
 
