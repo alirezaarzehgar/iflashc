@@ -178,7 +178,7 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 
 	contextSelector := widget.NewSelect(contexts, func(s string) {
 		searchQueryParams.Context = s
-		wordListCreator <- 0
+		wordListCreator <- struct{}{}
 	})
 	if len(contexts) >= 1 {
 		contextSelector.SetSelected(contexts[0])
@@ -186,7 +186,7 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 
 	langSelector := widget.NewSelect(languages, func(s string) {
 		searchQueryParams.Lang = s
-		wordListCreator <- 0
+		wordListCreator <- struct{}{}
 	})
 	if len(languages) >= 1 {
 		langSelector.SetSelected(languages[0])
@@ -194,7 +194,7 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 
 	transSelector := widget.NewSelect(config.ConfigurableTranslators, func(s string) {
 		searchQueryParams.Translator = s
-		wordListCreator <- 0
+		wordListCreator <- struct{}{}
 	})
 	transSelector.SetSelected(config.ConfigurableTranslators[0])
 
@@ -204,7 +204,7 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 	searchEntry.Bind(searchBind)
 	searchBind.AddListener(binding.NewDataListener(func() {
 		searchQueryParams.WordLike, _ = searchBind.Get()
-		wordListCreator <- 0
+		wordListCreator <- struct{}{}
 	}))
 
 	mainPage = container.NewBorder(
