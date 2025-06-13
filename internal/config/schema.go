@@ -30,7 +30,7 @@ var (
 		OpenAIBaseURL: "openai_base_url",
 	}
 
-	ConfigEntries = []string{
+	ConfigurableKeys = []string{
 		DefaultKeys.Translator,
 		DefaultKeys.Context,
 		DefaultKeys.OpenAIApiKey,

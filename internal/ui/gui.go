@@ -92,7 +92,7 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 
 	keyEntries := keyEntry{}
 
-	for _, k := range config.ConfigEntries {
+	for _, k := range config.ConfigurableKeys {
 		entry := widget.NewEntry()
 		entry.Text = cfgs[k]
 		label := widget.NewLabel(k)
@@ -102,7 +102,7 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	}
 
 	hboxConfig.Add(widget.NewButton("Save & Exit", func() {
-		for _, k := range config.ConfigEntries {
+		for _, k := range config.ConfigurableKeys {
 			e := keyEntries[k]
 			if e.Text == cfgs[k] {
 				continue
