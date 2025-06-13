@@ -21,8 +21,9 @@ const (
 )
 
 var (
-	DefaultTitleSize  float32   = 35
-	DefaultWindowSize fyne.Size = fyne.NewSize(600, 200)
+	DefaultTitleSize     float32   = 35
+	DefaultWindowSize    fyne.Size = fyne.NewSize(600, 200)
+	DefaultDictWindowLen float32   = 800
 )
 
 type TextBox struct {
@@ -122,11 +123,12 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 }
 
 func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
-	g.win.Resize(fyne.NewSize(800, 800))
+	g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
 
 	searchQueryParams := query.ListStoredWordsParams{}
 	wordListCreator := make(chan any)
 	wordList := container.NewVBox()
+	mainPage := &fyne.Container{}
 
 	go func() {
 		for {
@@ -140,7 +142,22 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 
 				wordList.RemoveAll()
 				for _, l := range list {
-					wordList.Add(widget.NewLabel(l.Word))
+					wordList.Add(widget.NewButton(l.Word, func() {
+						title := canvas.NewText(l.Word, color.White)
+						title.TextSize = DefaultTitleSize
+						title.Alignment = fyne.TextAlignCenter
+
+						rt := widget.NewRichTextFromMarkdown(l.Exp)
+						rt.Wrapping = fyne.TextWrapBreak
+
+						backBtn := widget.NewButton("back", func() {
+							g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
+							g.win.SetContent(mainPage)
+						})
+
+						g.win.SetContent(container.NewVBox(title, rt, backBtn))
+						g.win.Resize(fyne.NewSize(DefaultDictWindowLen, 0))
+					}))
 				}
 			}
 		}
@@ -190,7 +207,7 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 		wordListCreator <- 0
 	}))
 
-	mainPage := container.NewBorder(
+	mainPage = container.NewBorder(
 		container.NewGridWithColumns(2,
 			container.NewGridWithRows(2, widget.NewLabel(""), searchEntry),
 			container.NewHBox(
