@@ -37,7 +37,7 @@ var dictionaryCmd = &cobra.Command{
 		ctx := context.Background()
 		db, err := sql.Open("sqlite", TranslateConfig.dbPath)
 		if err != nil {
-			gui.ShowText(ui.TextBox{Title: "failed to open local database", Text: err.Error()})
+			gui.ShowError("failed to open local database", err)
 			return
 		}
 		defer db.Close()
@@ -45,12 +45,12 @@ var dictionaryCmd = &cobra.Command{
 		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
 			schema, err := config.GetSchema()
 			if err != nil {
-				gui.ShowText(ui.TextBox{Title: "failed to generate default config", Text: err.Error()})
+				gui.ShowError("failed to generate default config", err)
 				return
 			}
 			_, err = db.ExecContext(ctx, schema)
 			if err != nil {
-				gui.ShowText(ui.TextBox{Title: "failed to migrate local database", Text: err.Error()})
+				gui.ShowError("failed to migrate local database", err)
 				return
 			}
 		}
