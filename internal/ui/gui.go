@@ -2,6 +2,7 @@ package ui
 
 import (
 	"context"
+	"fmt"
 	"image/color"
 	"slices"
 
@@ -9,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/alirezaarzehgar/iflashc/internal/config"
 	"github.com/alirezaarzehgar/iflashc/internal/query"
@@ -29,15 +31,12 @@ type TextBox struct {
 
 type gui struct {
 	app fyne.App
+	win fyne.Window
 }
 
 func NewGUI() gui {
 	a := app.New()
-	return gui{app: a}
-}
-
-func (g gui) ShowText(tb TextBox) {
-	w := g.app.NewWindow("Integrated Flashcard")
+	w := a.NewWindow("Integrated Flashcard")
 	w.Resize(DefaultWindowSize)
 	w.SetFixedSize(true)
 	w.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
@@ -45,7 +44,10 @@ func (g gui) ShowText(tb TextBox) {
 			w.Close()
 		}
 	})
+	return gui{win: w, app: a}
+}
 
+func (g gui) ShowText(tb TextBox) {
 	if len(tb.Title) > MaxTitleLen {
 		tb.Title = tb.Title[:MaxTitleLen]
 	}
@@ -57,32 +59,21 @@ func (g gui) ShowText(tb TextBox) {
 	rt := widget.NewRichTextFromMarkdown(tb.Text)
 	rt.Wrapping = fyne.TextWrapBreak
 
-	w.SetContent(container.NewVBox(l, rt))
-	w.Show()
+	g.win.SetContent(container.NewVBox(l, rt))
+	g.win.Show()
 }
 
 func (g gui) Run() {
 	g.app.Run()
 }
 
-func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
-	w := g.app.NewWindow("Dashboard")
-	w.Resize(fyne.NewSize(600, 600))
-	w.Show()
+func (g gui) ShowError(text string, err error) {
+	dialog.ShowError(fmt.Errorf("%s: %w", text, err), g.win)
 }
 
 type keyEntry map[string]*widget.Entry
 
 func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
-	w := g.app.NewWindow("Configration Manager")
-	w.Resize(DefaultWindowSize)
-	w.SetFixedSize(true)
-	w.Canvas().SetOnTypedKey(func(ke *fyne.KeyEvent) {
-		if slices.Contains([]fyne.KeyName{fyne.KeyEscape}, ke.Name) {
-			w.Close()
-		}
-	})
-
 	hboxConfig := container.NewVBox()
 
 	label := canvas.NewText("Configuration Manager", color.White)
@@ -111,13 +102,33 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 			ctx := context.Background()
 			err := q.ChangeConfig(ctx, query.ChangeConfigParams{Key: k, Value: e.Text})
 			if err != nil {
-				g.ShowText(TextBox{Title: "Failed to change config", Text: err.Error()})
+				g.ShowError("failed to change config", err)
 			}
 		}
 
 		g.app.Quit()
 	}))
 
-	w.SetContent(hboxConfig)
-	w.Show()
+	g.win.SetContent(hboxConfig)
+	g.win.Show()
+}
+
+func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
+
+	ctx := context.Background()
+	languages, err := q.ListStoredLanguages(ctx)
+	if err != nil {
+		g.ShowError("failed to get languages from database", err)
+		return
+	}
+
+	langSelector := widget.NewSelect(languages, func(s string) {
+		dialog.ShowInformation(s, s, g.win)
+	})
+
+	mainPage := container.NewVBox(langSelector)
+	// wordPage := container.NewVBox()
+
+	g.win.SetContent(mainPage)
+	g.win.Show()
 }

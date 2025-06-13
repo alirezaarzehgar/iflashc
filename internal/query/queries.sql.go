@@ -68,6 +68,33 @@ func (q *Queries) GetConfigs(ctx context.Context) ([]Kvstore, error) {
 	return items, nil
 }
 
+const listStoredLanguages = `-- name: ListStoredLanguages :many
+SELECT DISTINCT lang FROM dictionary
+`
+
+func (q *Queries) ListStoredLanguages(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listStoredLanguages)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var lang string
+		if err := rows.Scan(&lang); err != nil {
+			return nil, err
+		}
+		items = append(items, lang)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const saveWord = `-- name: SaveWord :exec
 INSERT INTO dictionary (word, exp, translator, lang, context) VALUES (?, ?, ?, ?, ?)
 `

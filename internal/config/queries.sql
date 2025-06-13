@@ -9,3 +9,6 @@ INSERT INTO dictionary (word, exp, translator, lang, context) VALUES (?, ?, ?, ?
 
 -- name: ChangeConfig :exec
 INSERT OR REPLACE INTO  kvstore (key, value) VALUES (?, ?);
+
+-- name: ListStoredLanguages :many
+SELECT DISTINCT lang FROM dictionary;

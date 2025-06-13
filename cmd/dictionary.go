@@ -65,5 +65,5 @@ var dictionaryCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(dictionaryCmd)
 }
