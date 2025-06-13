@@ -2,7 +2,6 @@ package ui
 
 import (
 	"context"
-	"fmt"
 	"image/color"
 	"slices"
 
@@ -18,8 +17,7 @@ import (
 )
 
 const (
-	MaxTitleLen  = 45
-	NoContextKey = "No Context"
+	MaxTitleLen = 45
 )
 
 var (
@@ -127,7 +125,26 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 	g.win.Resize(fyne.NewSize(800, 800))
 
 	searchQueryParams := query.ListStoredWordsParams{}
-	searchBind := binding.NewString()
+	wordListCreator := make(chan any)
+	wordList := container.NewVBox()
+
+	go func() {
+		for {
+			select {
+			case <-wordListCreator:
+				ctx := context.Background()
+				list, err := q.ListStoredWords(ctx, searchQueryParams)
+				if err != nil {
+					dialog.ShowError(err, g.win)
+				}
+
+				wordList.RemoveAll()
+				for _, l := range list {
+					wordList.Add(widget.NewLabel(l.Word))
+				}
+			}
+		}
+	}()
 
 	ctx := context.Background()
 	languages, err := q.ListStoredLanguages(ctx)
@@ -142,12 +159,9 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 		return
 	}
 
-	// TODO "no context" should be filter on config
 	contextSelector := widget.NewSelect(contexts, func(s string) {
-		if s == NoContextKey {
-			s = ""
-		}
 		searchQueryParams.Context = s
+		wordListCreator <- 0
 	})
 	if len(contexts) >= 1 {
 		contextSelector.SetSelected(contexts[0])
@@ -155,6 +169,7 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 
 	langSelector := widget.NewSelect(languages, func(s string) {
 		searchQueryParams.Lang = s
+		wordListCreator <- 0
 	})
 	if len(languages) >= 1 {
 		langSelector.SetSelected(languages[0])
@@ -162,15 +177,20 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 
 	transSelector := widget.NewSelect(config.ConfigurableTranslators, func(s string) {
 		searchQueryParams.Translator = s
+		wordListCreator <- 0
 	})
 	transSelector.SetSelected(config.ConfigurableTranslators[0])
 
 	searchEntry := widget.NewEntry()
 	searchEntry.PlaceHolder = "Search word"
+	searchBind := binding.NewString()
 	searchEntry.Bind(searchBind)
+	searchBind.AddListener(binding.NewDataListener(func() {
+		searchQueryParams.WordLike, _ = searchBind.Get()
+		wordListCreator <- 0
+	}))
 
-	wordList := container.NewVBox()
-	mainPage := container.NewVBox(
+	mainPage := container.NewBorder(
 		container.NewGridWithColumns(2,
 			container.NewGridWithRows(2, widget.NewLabel(""), searchEntry),
 			container.NewHBox(
@@ -179,18 +199,9 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 				container.NewVBox(widget.NewLabel("Contexts:"), contextSelector),
 			),
 		),
-		wordList,
+		nil, nil, nil,
+		container.NewVScroll(wordList),
 	)
-
-	searchBind.AddListener(binding.NewDataListener(func() {
-		ctx := context.Background()
-		searchQueryParams.WordLike, _ = searchBind.Get()
-		list, err := q.ListStoredWords(ctx, searchQueryParams)
-		if err != nil {
-			dialog.ShowError(err, g.win)
-		}
-		fmt.Printf("%+v, %+v\n", searchQueryParams, list)
-	}))
 
 	g.win.SetContent(mainPage)
 	g.win.Show()
