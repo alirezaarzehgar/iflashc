@@ -6,7 +6,10 @@ LDFLAGS := -ldflags="-s -w -X main.version=${VERSION} -X main.buildTime=${BUILD_
 
 all: build
 
-build: ${BIN}
+build: download ${BIN}
+
+download:
+	go mod download
 
 ${BIN}: ${SRC}
 		go build $(LDFLAGS) -o $@ .
@@ -16,7 +19,6 @@ install: build
 
 sqlc-gen:
 	sqlc generate
-
 
 clean:
 	rm -f $(BIN)
