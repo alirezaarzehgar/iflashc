@@ -15,7 +15,15 @@ const (
 	TypeOpenAI        = "openai"
 	TypeGoogle        = "google"
 	TypeDictionaryApi = "dictapi"
+	TypeFastdic       = "fastdic"
 )
+
+var ConfigurableTranslators = []string{
+	TypeOpenAI,
+	TypeGoogle,
+	TypeDictionaryApi,
+	TypeFastdic,
+}
 
 type Keys struct {
 	DestLang      string
@@ -52,12 +60,6 @@ var (
 		DefaultKeys.OpenAIBaseURL,
 		DefaultKeys.DestLang,
 		DefaultKeys.Socks5,
-	}
-
-	ConfigurableTranslators = []string{
-		TypeOpenAI,
-		TypeGoogle,
-		TypeDictionaryApi,
 	}
 )
 

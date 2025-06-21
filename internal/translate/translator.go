@@ -23,6 +23,8 @@ func New(t config.TransType, cfg config.Config) Translator {
 		return google{To: cfg[config.DefaultKeys.DestLang]}
 	case config.TypeDictionaryApi:
 		return dictionaryapi{}
+	case config.TypeFastdic:
+		return fastdic{}
 	}
 
 	nativeTargetLang := cfg[config.DefaultKeys.DestLang]
