@@ -46,6 +46,9 @@ func (f fastdic) Translate(text string) (string, error) {
 			meanings = append(meanings, r)
 		}
 	}
+	if len(meanings) == 0 {
+		return "", fmt.Errorf("no meaning found")
+	}
 	if len(meanings) > 10 {
 		meanings = meanings[:10]
 	}
