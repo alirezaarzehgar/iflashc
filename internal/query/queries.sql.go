@@ -122,14 +122,17 @@ func (q *Queries) ListStoredLanguages(ctx context.Context) ([]string, error) {
 }
 
 const listStoredWords = `-- name: ListStoredWords :many
-SELECT word, exp FROM dictionary WHERE translator = ? AND lang = ? AND context = ? AND  word LIKE CAST(?4 AS TEXT) || '%' COLLATE NOCASE
+SELECT word, exp FROM dictionary WHERE word LIKE CAST(?1 AS TEXT) || '%' COLLATE NOCASE AND
+    (translator = ?2 OR ?2 = '') AND
+    (lang = ?3 OR ?3 = '') AND
+    (context = ?4 OR ?4 = '')
 `
 
 type ListStoredWordsParams struct {
+	WordLike   string
 	Translator string
 	Lang       string
 	Context    string
-	WordLike   string
 }
 
 type ListStoredWordsRow struct {
@@ -139,10 +142,10 @@ type ListStoredWordsRow struct {
 
 func (q *Queries) ListStoredWords(ctx context.Context, arg ListStoredWordsParams) ([]ListStoredWordsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listStoredWords,
+		arg.WordLike,
 		arg.Translator,
 		arg.Lang,
 		arg.Context,
-		arg.WordLike,
 	)
 	if err != nil {
 		return nil, err

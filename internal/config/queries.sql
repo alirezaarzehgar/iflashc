@@ -17,4 +17,7 @@ SELECT DISTINCT lang FROM dictionary;
 SELECT DISTINCT context FROM dictionary;
 
 -- name: ListStoredWords :many
-SELECT word, exp FROM dictionary WHERE translator = ? AND lang = ? AND context = ? AND  word LIKE CAST(sqlc.arg(word_like) AS TEXT) || '%' COLLATE NOCASE;
+SELECT word, exp FROM dictionary WHERE word LIKE CAST(sqlc.arg(word_like) AS TEXT) || '%' COLLATE NOCASE AND
+    (translator = sqlc.arg(translator) OR sqlc.arg(translator) = '') AND
+    (lang = sqlc.arg(lang) OR sqlc.arg(lang) = '') AND
+    (context = sqlc.arg(context) OR sqlc.arg(context) = '');

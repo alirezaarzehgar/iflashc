@@ -169,19 +169,21 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 		g.ShowError("failed to get languages from database", err)
 		return
 	}
+	languages = append([]string{""}, languages...)
 
 	contexts, err := q.ListStoredContexts(ctx)
 	if err != nil {
 		g.ShowError("failed to get languages from database", err)
 		return
 	}
+	contexts = append([]string{""}, contexts...)
 
 	contextSelector := widget.NewSelect(contexts, func(s string) {
 		searchQueryParams.Context = s
 		wordListCreator <- struct{}{}
 	})
 	if len(contexts) >= 1 {
-		contextSelector.SetSelected(contexts[0])
+		contextSelector.SetSelected(cfgs[config.DefaultKeys.Context])
 	}
 
 	langSelector := widget.NewSelect(languages, func(s string) {
@@ -189,14 +191,16 @@ func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
 		wordListCreator <- struct{}{}
 	})
 	if len(languages) >= 1 {
-		langSelector.SetSelected(languages[0])
+		langSelector.SetSelected(cfgs[config.DefaultKeys.DestLang])
 	}
+	languages = append([]string{""}, languages...)
 
-	transSelector := widget.NewSelect(config.ConfigurableTranslators, func(s string) {
+	translators := append([]string{""}, config.ConfigurableTranslators...)
+	transSelector := widget.NewSelect(translators, func(s string) {
 		searchQueryParams.Translator = s
 		wordListCreator <- struct{}{}
 	})
-	transSelector.SetSelected(config.ConfigurableTranslators[0])
+	transSelector.SetSelected(cfgs[config.DefaultKeys.Translator])
 
 	searchEntry := widget.NewEntry()
 	searchEntry.PlaceHolder = "Search word"
