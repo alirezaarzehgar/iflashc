@@ -102,16 +102,18 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		err = q.SaveWord(ctx, query.SaveWordParams{
-			Word:       selectedText,
-			Exp:        explaination,
-			Translator: cfgTranslator,
-			Lang:       cfgLang,
-			Context:    cfgCtx,
-		})
-		if err != nil {
-			gui.ShowError("failed to save explanation", err)
-			return
+		if !TranslateConfig.noDB {
+			err = q.SaveWord(ctx, query.SaveWordParams{
+				Word:       selectedText,
+				Exp:        explaination,
+				Translator: cfgTranslator,
+				Lang:       cfgLang,
+				Context:    cfgCtx,
+			})
+			if err != nil {
+				gui.ShowError("failed to save explanation", err)
+				return
+			}
 		}
 
 		gui.ShowText(ui.TextBox{Title: selectedText, Text: explaination})
@@ -130,5 +132,5 @@ func Execute() {
 func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().StringVar(&TranslateConfig.dbPath, "db", path.Join(os.Getenv("HOME"), ".iflashc.db"), "local database path")
-	// rootCmd.PersistentFlags().BoolVar(&translateConfig.noDB, "nodb", false, "disable database actions and operate using default values")
+	rootCmd.PersistentFlags().BoolVar(&TranslateConfig.noDB, "nodb", false, "disable database actions and operate using default values")
 }
