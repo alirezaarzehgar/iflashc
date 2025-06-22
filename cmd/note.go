@@ -17,12 +17,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/alirezaarzehgar/iflashc/internal/config"
 	"github.com/alirezaarzehgar/iflashc/internal/query"
 	"github.com/spf13/cobra"
 	"github.com/tiagomelo/go-clipboard/clipboard"
+)
+
+var (
+	noteParams struct {
+		noComment bool
+	}
 )
 
 var noteCmd = &cobra.Command{
@@ -37,9 +41,14 @@ var noteCmd = &cobra.Command{
 			return
 		}
 
+		comment, confirm := app.gui.GetCommentAndConfirmNote(selectedText)
+		if !confirm {
+			return
+		}
+
 		app.queries.SaveNote(app.ctx, query.SaveNoteParams{
 			Note:    selectedText,
-			Comment: "",
+			Comment: comment,
 			Context: app.configs[config.DefaultKeys.Context],
 		})
 		if err != nil {
@@ -47,11 +56,10 @@ var noteCmd = &cobra.Command{
 			app.gui.Run()
 			return
 		}
-
-		fmt.Println("Saved note")
 	},
 }
 
 func init() {
+	noteCmd.PersistentFlags().BoolVar(&noteParams.noComment, "no-comment", false, "Set to disable getting comment")
 	rootCmd.AddCommand(noteCmd)
 }

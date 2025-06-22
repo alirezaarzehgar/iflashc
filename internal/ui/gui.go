@@ -64,6 +64,34 @@ func (g GUI) ShowText(tb TextBox) {
 	g.win.Show()
 }
 
+func (g GUI) GetCommentAndConfirmNote(text string) (string, bool) {
+	g.win.Resize(fyne.NewSize(600, 250))
+
+	rt := widget.NewMultiLineEntry()
+	rt.SetText(text)
+	rt.SetPlaceHolder("Write your text")
+
+	entry := widget.NewMultiLineEntry()
+	entry.SetPlaceHolder("Write a comment for your text")
+
+	confirm := false
+	okBtn := widget.NewButton("Save Note", func() {
+		confirm = true
+		g.app.Quit()
+	})
+	cancelBtn := widget.NewButton("Ignore", func() {
+		g.app.Quit()
+	})
+
+	g.win.SetContent(container.NewGridWithRows(
+		2,
+		rt,
+		container.NewVBox(entry, container.NewHSplit(okBtn, cancelBtn)),
+	))
+	g.win.ShowAndRun()
+	return entry.Text, confirm
+}
+
 func (g GUI) Run() {
 	g.app.Run()
 }
@@ -193,7 +221,6 @@ func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 	if len(languages) >= 1 {
 		langSelector.SetSelected(cfgs[config.DefaultKeys.DestLang])
 	}
-	languages = append([]string{""}, languages...)
 
 	translators := append([]string{""}, config.ConfigurableTranslators...)
 	transSelector := widget.NewSelect(translators, func(s string) {
