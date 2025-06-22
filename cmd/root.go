@@ -41,6 +41,14 @@ var (
 		noDB              bool
 		SchemaDataQueries string
 	}
+
+	app struct {
+		gui     ui.GUI
+		ctx     context.Context
+		db      *sql.DB
+		queries *query.Queries
+		configs config.Config
+	}
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -48,62 +56,35 @@ var rootCmd = &cobra.Command{
 	Use:   "iflashc",
 	Short: "translate selected text",
 	Run: func(cmd *cobra.Command, args []string) {
-		gui := ui.NewGUI()
-		defer gui.Run()
+		defer app.gui.Run()
 
 		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
 		selectedText, err := c.PasteText()
 		if err != nil {
-			gui.ShowError("failed to paste", err)
+			app.gui.ShowError("failed to paste", err)
 			return
 		}
-
-		ctx := context.Background()
-		db, err := sql.Open("sqlite", TranslateConfig.dbPath)
-		if err != nil {
-			gui.ShowError("failed to open local database", err)
-			return
-		}
-		defer db.Close()
-
-		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
-			schema, err := config.GetSchema()
-			if err != nil {
-				gui.ShowError("failed to generate default config", err)
-				return
-			}
-			_, err = db.ExecContext(ctx, schema)
-			if err != nil {
-				gui.ShowError("failed to migrate local database", err)
-				return
-			}
-		}
-
-		q := query.New(db)
-
-		kv, _ := q.GetConfigs(ctx)
-		configs := config.ConfigToMap(kv)
 
 		selectedText = strings.ToLower(selectedText)
 
-		cfgTranslator := configs[config.DefaultKeys.Translator]
-		cfgLang := configs[config.DefaultKeys.DestLang]
-		cfgCtx := configs[config.DefaultKeys.Context]
-		explaination, err := q.FindMatchedWord(ctx, query.FindMatchedWordParams{Word: selectedText, Translator: cfgTranslator, Lang: cfgLang})
+		cfgTranslator := app.configs[config.DefaultKeys.Translator]
+		cfgLang := app.configs[config.DefaultKeys.DestLang]
+		cfgCtx := app.configs[config.DefaultKeys.Context]
+		explaination, err := app.queries.FindMatchedWord(app.ctx, query.FindMatchedWordParams{Word: selectedText, Translator: cfgTranslator, Lang: cfgLang})
 		if err == nil {
-			gui.ShowText(ui.TextBox{Title: selectedText, Text: explaination})
+			app.gui.ShowText(ui.TextBox{Title: selectedText, Text: explaination})
 			return
 		}
 
-		translator := translate.New(config.TransType(cfgTranslator), configs)
+		translator := translate.New(config.TransType(cfgTranslator), app.configs)
 		explaination, err = translator.Translate(selectedText)
 		if err != nil {
-			gui.ShowError("failed to translate selected text", err)
+			app.gui.ShowError("failed to translate selected text", err)
 			return
 		}
 
 		if !TranslateConfig.noDB {
-			err = q.SaveWord(ctx, query.SaveWordParams{
+			err = app.queries.SaveWord(app.ctx, query.SaveWordParams{
 				Word:       selectedText,
 				Exp:        explaination,
 				Translator: cfgTranslator,
@@ -111,12 +92,12 @@ var rootCmd = &cobra.Command{
 				Context:    cfgCtx,
 			})
 			if err != nil {
-				gui.ShowError("failed to save explanation", err)
+				app.gui.ShowError("failed to save explanation", err)
 				return
 			}
 		}
 
-		gui.ShowText(ui.TextBox{Title: selectedText, Text: explaination})
+		app.gui.ShowText(ui.TextBox{Title: selectedText, Text: explaination})
 	},
 }
 
@@ -133,4 +114,31 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().StringVar(&TranslateConfig.dbPath, "db", path.Join(os.Getenv("HOME"), ".iflashc.db"), "local database path")
 	rootCmd.PersistentFlags().BoolVar(&TranslateConfig.noDB, "nodb", false, "disable database actions and operate using default values")
+
+	var err error
+	app.gui = ui.NewGUI()
+
+	app.ctx = context.Background()
+	app.db, err = sql.Open("sqlite", TranslateConfig.dbPath)
+	if err != nil {
+		app.gui.ShowError("failed to open local database", err)
+		return
+	}
+
+	if _, err = os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
+		schema, err := config.GetSchema()
+		if err != nil {
+			app.gui.ShowError("failed to generate default config", err)
+			return
+		}
+		_, err = app.db.ExecContext(app.ctx, schema)
+		if err != nil {
+			app.gui.ShowError("failed to migrate local database", err)
+			return
+		}
+	}
+
+	app.queries = query.New(app.db)
+	kv, _ := app.queries.GetConfigs(app.ctx)
+	app.configs = config.ConfigToMap(kv)
 }

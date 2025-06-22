@@ -17,13 +17,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
-	"context"
-	"database/sql"
-	"os"
-
-	"github.com/alirezaarzehgar/iflashc/internal/config"
-	"github.com/alirezaarzehgar/iflashc/internal/query"
-	"github.com/alirezaarzehgar/iflashc/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -31,35 +24,8 @@ var dictionaryCmd = &cobra.Command{
 	Use:   "dictionary",
 	Short: "visit dictionary",
 	Run: func(cmd *cobra.Command, args []string) {
-		gui := ui.NewGUI()
-		defer gui.Run()
-
-		ctx := context.Background()
-		db, err := sql.Open("sqlite", TranslateConfig.dbPath)
-		if err != nil {
-			gui.ShowError("failed to open local database", err)
-			return
-		}
-
-		if _, err := os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
-			schema, err := config.GetSchema()
-			if err != nil {
-				gui.ShowError("failed to generate default config", err)
-				return
-			}
-			_, err = db.ExecContext(ctx, schema)
-			if err != nil {
-				gui.ShowError("failed to migrate local database", err)
-				return
-			}
-		}
-
-		q := query.New(db)
-		kv, _ := q.GetConfigs(ctx)
-		gui.Dashboard(
-			q,
-			config.ConfigToMap(kv),
-		)
+		app.gui.Dashboard(app.queries, app.configs)
+		app.gui.Run()
 	},
 }
 
