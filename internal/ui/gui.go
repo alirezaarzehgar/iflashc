@@ -30,12 +30,12 @@ type TextBox struct {
 	Title, Text string
 }
 
-type gui struct {
+type GUI struct {
 	app fyne.App
 	win fyne.Window
 }
 
-func NewGUI() gui {
+func NewGUI() GUI {
 	a := app.New()
 	w := a.NewWindow("Integrated Flashcard")
 	w.Resize(DefaultWindowSize)
@@ -45,10 +45,10 @@ func NewGUI() gui {
 			a.Quit()
 		}
 	})
-	return gui{win: w, app: a}
+	return GUI{win: w, app: a}
 }
 
-func (g gui) ShowText(tb TextBox) {
+func (g GUI) ShowText(tb TextBox) {
 	if len(tb.Title) > MaxTitleLen {
 		tb.Title = tb.Title[:MaxTitleLen]
 	}
@@ -64,11 +64,11 @@ func (g gui) ShowText(tb TextBox) {
 	g.win.Show()
 }
 
-func (g gui) Run() {
+func (g GUI) Run() {
 	g.app.Run()
 }
 
-func (g gui) ShowError(text string, err error) {
+func (g GUI) ShowError(text string, err error) {
 	l := canvas.NewText(text, color.White)
 	l.TextSize = DefaultTitleSize
 	l.Alignment = fyne.TextAlignCenter
@@ -82,7 +82,7 @@ func (g gui) ShowError(text string, err error) {
 
 type keyEntry map[string]*widget.Entry
 
-func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
+func (g GUI) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	hboxConfig := container.NewVBox()
 
 	label := canvas.NewText("Configuration Manager", color.White)
@@ -122,7 +122,7 @@ func (g gui) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	g.win.Show()
 }
 
-func (g gui) Dashboard(q *query.Queries, cfgs config.Config) {
+func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 	g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
 
 	searchQueryParams := query.ListStoredWordsParams{}

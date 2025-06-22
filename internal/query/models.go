@@ -16,3 +16,10 @@ type Kvstore struct {
 	Key   string
 	Value string
 }
+
+type Note struct {
+	Note       string
+	Comment    string
+	Occurrence int64
+	Context    string
+}

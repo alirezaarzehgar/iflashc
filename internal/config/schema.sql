@@ -9,4 +9,11 @@ CREATE TABLE dictionary (
     translator text NOT NULL,
     context text NOT NULL
 );
+CREATE TABLE notes (
+    note text PRIMARY KEY,
+    comment text NOT NULL,
+    occurrence int NOT NULL,
+    context text NOT NULL,
+    CHECK(note <> '')
+);
 CREATE INDEX idx_dictionary_word ON dictionary(word);

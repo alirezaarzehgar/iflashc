@@ -168,6 +168,23 @@ func (q *Queries) ListStoredWords(ctx context.Context, arg ListStoredWordsParams
 	return items, nil
 }
 
+const saveNote = `-- name: SaveNote :exec
+INSERT INTO notes (note, comment, occurrence, context)
+VALUES (?1, ?2, 1, ?3)
+ON CONFLICT (note) DO UPDATE SET comment = ?2, context = ?3, occurrence = occurrence + 1
+`
+
+type SaveNoteParams struct {
+	Note    string
+	Comment string
+	Context string
+}
+
+func (q *Queries) SaveNote(ctx context.Context, arg SaveNoteParams) error {
+	_, err := q.db.ExecContext(ctx, saveNote, arg.Note, arg.Comment, arg.Context)
+	return err
+}
+
 const saveWord = `-- name: SaveWord :exec
 INSERT INTO dictionary (word, exp, translator, lang, context) VALUES (?, ?, ?, ?, ?)
 `
