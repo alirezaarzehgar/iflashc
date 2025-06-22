@@ -47,7 +47,6 @@ You can run `iflashc` on terminal. But it's not the correct usage of this applic
 Set shortcut on your faivorite desktop/window manager and enjoy.
 
 ```plaintext
-$ iflashc --help
 translate selected text
 
 Usage:
@@ -57,12 +56,14 @@ Usage:
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
   config      manage configs
-  dictionary  visit dictionary
+  dashboard   visit saved words and notes
   help        Help about any command
+  note        manage notes and bookmarks
 
 Flags:
       --db string   local database path (default "/home/ali/.iflashc.db")
   -h, --help        help for iflashc
+      --nodb        disable database actions and operate using default values
   -t, --toggle      Help message for toggle
 
 Use "iflashc [command] --help" for more information about a command.
