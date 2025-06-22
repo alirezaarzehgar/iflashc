@@ -67,12 +67,12 @@ func (q *Queries) GetConfigs(ctx context.Context) ([]Kvstore, error) {
 	return items, nil
 }
 
-const listStoredContexts = `-- name: ListStoredContexts :many
+const listStoredHistoryContexts = `-- name: ListStoredHistoryContexts :many
 SELECT DISTINCT context FROM dictionary
 `
 
-func (q *Queries) ListStoredContexts(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listStoredContexts)
+func (q *Queries) ListStoredHistoryContexts(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listStoredHistoryContexts)
 	if err != nil {
 		return nil, err
 	}
@@ -111,6 +111,72 @@ func (q *Queries) ListStoredLanguages(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 		items = append(items, lang)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStoredNoteContexts = `-- name: ListStoredNoteContexts :many
+SELECT DISTINCT context FROM notes
+`
+
+func (q *Queries) ListStoredNoteContexts(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listStoredNoteContexts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var context string
+		if err := rows.Scan(&context); err != nil {
+			return nil, err
+		}
+		items = append(items, context)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStoredNotes = `-- name: ListStoredNotes :many
+SELECT note, comment, occurrence, context FROM notes WHERE note LIKE '%' COLLATE NOCASE || CAST(?1 AS TEXT) || '%' COLLATE NOCASE
+AND (context = ?2 OR ?2 = '')
+ORDER BY occurrence DESC
+`
+
+type ListStoredNotesParams struct {
+	Column1 string
+	Context string
+}
+
+func (q *Queries) ListStoredNotes(ctx context.Context, arg ListStoredNotesParams) ([]Note, error) {
+	rows, err := q.db.QueryContext(ctx, listStoredNotes, arg.Column1, arg.Context)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Note
+	for rows.Next() {
+		var i Note
+		if err := rows.Scan(
+			&i.Note,
+			&i.Comment,
+			&i.Occurrence,
+			&i.Context,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

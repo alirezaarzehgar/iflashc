@@ -2,6 +2,7 @@ package ui
 
 import (
 	"context"
+	"fmt"
 	"image/color"
 	"slices"
 
@@ -153,10 +154,30 @@ func (g GUI) ManageConfigs(q *query.Queries, cfgs config.Config) {
 func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 	g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
 
+	historyPage := &fyne.Container{}
+	notesPage := &fyne.Container{}
+
+	pageSelector := widget.NewSelect([]string{"history", "notes"}, func(s string) {
+		switch s {
+		case "history":
+			g.win.SetContent(historyPage)
+		case "notes":
+			g.win.SetContent(notesPage)
+		}
+	})
+	pageSelector.SetSelected("history")
+
+	historyPage = g.historyPage(q, cfgs, pageSelector)
+	notesPage = g.notesPage(q, cfgs, pageSelector)
+	g.win.SetContent(historyPage)
+	g.win.Show()
+}
+
+func (g GUI) historyPage(q *query.Queries, cfgs config.Config, pageSelector *widget.Select) *fyne.Container {
 	searchQueryParams := query.ListStoredWordsParams{}
 	wordListCreator := make(chan any)
 	wordList := container.NewVBox()
-	mainPage := &fyne.Container{}
+	historyPage := &fyne.Container{}
 
 	go func() {
 		for {
@@ -180,7 +201,7 @@ func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 
 						backBtn := widget.NewButton("back", func() {
 							g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
-							g.win.SetContent(mainPage)
+							g.win.SetContent(historyPage)
 						})
 
 						g.win.SetContent(container.NewVBox(title, rt, backBtn))
@@ -195,14 +216,14 @@ func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 	languages, err := q.ListStoredLanguages(ctx)
 	if err != nil {
 		g.ShowError("failed to get languages from database", err)
-		return
+		return nil
 	}
 	languages = append([]string{""}, languages...)
 
-	contexts, err := q.ListStoredContexts(ctx)
+	contexts, err := q.ListStoredHistoryContexts(ctx)
 	if err != nil {
 		g.ShowError("failed to get languages from database", err)
-		return
+		return nil
 	}
 	contexts = append([]string{""}, contexts...)
 
@@ -238,9 +259,9 @@ func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 		wordListCreator <- struct{}{}
 	}))
 
-	mainPage = container.NewBorder(
+	historyPage = container.NewBorder(
 		container.NewGridWithColumns(2,
-			container.NewGridWithRows(2, widget.NewLabel(""), searchEntry),
+			container.NewGridWithRows(2, pageSelector, searchEntry),
 			container.NewHBox(
 				container.NewVBox(widget.NewLabel("Languages:"), langSelector),
 				container.NewVBox(widget.NewLabel("Translators:"), transSelector),
@@ -251,6 +272,92 @@ func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 		container.NewVScroll(wordList),
 	)
 
-	g.win.SetContent(mainPage)
-	g.win.Show()
+	return historyPage
+}
+
+func (g GUI) notesPage(q *query.Queries, cfgs config.Config, pageSelector *widget.Select) *fyne.Container {
+	searchQueryParams := query.ListStoredNotesParams{}
+	noteListCreator := make(chan any)
+	noteList := container.NewVBox()
+	notesPage := &fyne.Container{}
+
+	go func() {
+		for {
+			select {
+			case <-noteListCreator:
+				ctx := context.Background()
+				list, err := q.ListStoredNotes(ctx, searchQueryParams)
+				if err != nil {
+					dialog.ShowError(err, g.win)
+				}
+
+				noteList.RemoveAll()
+				for _, l := range list {
+					preview := l.Note
+					if len(preview) >= 20 {
+						preview = preview[:20]
+					}
+					preview = fmt.Sprintf("%s | %d", preview, l.Occurrence)
+
+					noteList.Add(widget.NewButton(preview, func() {
+						title := canvas.NewText("Your Note", color.White)
+						title.TextSize = DefaultTitleSize
+						title.Alignment = fyne.TextAlignCenter
+
+						note := widget.NewRichTextFromMarkdown(l.Note)
+						note.Wrapping = fyne.TextWrapBreak
+
+						comment := widget.NewRichTextFromMarkdown(l.Comment)
+						comment.Wrapping = fyne.TextWrapBreak
+
+						backBtn := widget.NewButton("back", func() {
+							g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
+							g.win.SetContent(notesPage)
+						})
+
+						g.win.SetContent(container.NewVBox(title, note, comment, backBtn))
+						g.win.Resize(fyne.NewSize(DefaultDictWindowLen, 0))
+					}))
+				}
+			}
+		}
+	}()
+
+	ctx := context.Background()
+	contexts, err := q.ListStoredNoteContexts(ctx)
+	if err != nil {
+		g.ShowError("failed to get languages from database", err)
+		return nil
+	}
+	contexts = append([]string{""}, contexts...)
+
+	contextSelector := widget.NewSelect(contexts, func(s string) {
+		searchQueryParams.Context = s
+		noteListCreator <- struct{}{}
+	})
+	if len(contexts) >= 1 {
+		contextSelector.SetSelected(cfgs[config.DefaultKeys.Context])
+	}
+
+	searchEntry := widget.NewEntry()
+	searchEntry.PlaceHolder = "Search word"
+	searchBind := binding.NewString()
+	searchEntry.Bind(searchBind)
+	searchBind.AddListener(binding.NewDataListener(func() {
+		searchQueryParams.Column1, _ = searchBind.Get()
+		noteListCreator <- struct{}{}
+	}))
+
+	notesPage = container.NewBorder(
+		container.NewGridWithColumns(2,
+			container.NewGridWithRows(2, pageSelector, searchEntry),
+			container.NewHBox(
+				container.NewVBox(widget.NewLabel("Contexts:"), contextSelector),
+			),
+		),
+		nil, nil, nil,
+		container.NewVScroll(noteList),
+	)
+
+	return notesPage
 }
