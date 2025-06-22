@@ -4,7 +4,7 @@
 
 package query
 
-type Dictionary struct {
+type History struct {
 	Word       string
 	Exp        string
 	Lang       string

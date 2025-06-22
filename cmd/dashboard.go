@@ -20,9 +20,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var dictionaryCmd = &cobra.Command{
-	Use:   "dictionary",
-	Short: "visit dictionary",
+var historyCmd = &cobra.Command{
+	Use:   "dashboard",
+	Short: "visit saved words and notes",
 	Run: func(cmd *cobra.Command, args []string) {
 		app.gui.Dashboard(app.queries, app.configs)
 		app.gui.Run()
@@ -30,5 +30,5 @@ var dictionaryCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(dictionaryCmd)
+	rootCmd.AddCommand(historyCmd)
 }

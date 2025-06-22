@@ -84,7 +84,8 @@ bindsym $mod+p mode "$iflashc"
 mode "$iflashc" {
 	bindsym f exec iflashc
 	bindsym c exec iflashc config
-	bindsym d exec iflashc dictionary
+	bindsym d exec iflashc dashboard
+	bindsym n exec iflashc note
 
   bindsym Escape mode "default"
 }
@@ -96,7 +97,8 @@ Change `bindcode` numbers based on your needs. Use `xev` to find key codes.
 ```plaintext
 bindsym $mod+Shift+f exec iflashc
 bindsym $mod+Shift+c exec iflashc config
-bindsym $mod+Shift+d exec iflashc dictionary
+bindsym $mod+Shift+d exec iflashc dashboard
+bindsym $mod+Shift+n exec iflashc note
 ```
 
 ### Bind f10-12 using bindcode
@@ -105,5 +107,6 @@ Change `bindcode` numbers based on your needs. Use `xev` to find key codes.
 ```plaintext
 bindcode 96 exec iflashc            # f12
 bindcode 95 exec iflashc config     # f11
-bindcode 76 exec iflashc dictionary # f10
+bindcode 76 exec iflashc dashboard  # f10
+bindcode 75 exec iflashc note       # f9
 ```

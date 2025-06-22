@@ -2,7 +2,7 @@ CREATE TABLE kvstore (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
-CREATE TABLE dictionary (
+CREATE TABLE history (
     word text NOT NULL,
     exp text NOT NULL,
     lang text NOT NULL,
@@ -16,4 +16,4 @@ CREATE TABLE notes (
     context text NOT NULL,
     CHECK(note <> '')
 );
-CREATE INDEX idx_dictionary_word ON dictionary(word);
+CREATE INDEX idx_history_word ON history(word);

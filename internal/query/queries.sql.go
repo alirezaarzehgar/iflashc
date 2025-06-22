@@ -24,7 +24,7 @@ func (q *Queries) ChangeConfig(ctx context.Context, arg ChangeConfigParams) erro
 }
 
 const findMatchedWord = `-- name: FindMatchedWord :one
-SELECT exp FROM dictionary WHERE word = ? AND translator = ? AND lang = ?
+SELECT exp FROM history WHERE word = ? AND translator = ? AND lang = ?
 `
 
 type FindMatchedWordParams struct {
@@ -68,7 +68,7 @@ func (q *Queries) GetConfigs(ctx context.Context) ([]Kvstore, error) {
 }
 
 const listStoredHistoryContexts = `-- name: ListStoredHistoryContexts :many
-SELECT DISTINCT context FROM dictionary
+SELECT DISTINCT context FROM history
 `
 
 func (q *Queries) ListStoredHistoryContexts(ctx context.Context) ([]string, error) {
@@ -95,7 +95,7 @@ func (q *Queries) ListStoredHistoryContexts(ctx context.Context) ([]string, erro
 }
 
 const listStoredLanguages = `-- name: ListStoredLanguages :many
-SELECT DISTINCT lang FROM dictionary
+SELECT DISTINCT lang FROM history
 `
 
 func (q *Queries) ListStoredLanguages(ctx context.Context) ([]string, error) {
@@ -188,7 +188,7 @@ func (q *Queries) ListStoredNotes(ctx context.Context, arg ListStoredNotesParams
 }
 
 const listStoredWords = `-- name: ListStoredWords :many
-SELECT word, exp FROM dictionary WHERE word LIKE CAST(?1 AS TEXT) || '%' COLLATE NOCASE AND
+SELECT word, exp FROM history WHERE word LIKE CAST(?1 AS TEXT) || '%' COLLATE NOCASE AND
     (translator = ?2 OR ?2 = '') AND
     (lang = ?3 OR ?3 = '') AND
     (context = ?4 OR ?4 = '')
@@ -252,7 +252,7 @@ func (q *Queries) SaveNote(ctx context.Context, arg SaveNoteParams) error {
 }
 
 const saveWord = `-- name: SaveWord :exec
-INSERT INTO dictionary (word, exp, translator, lang, context) VALUES (?, ?, ?, ?, ?)
+INSERT INTO history (word, exp, translator, lang, context) VALUES (?, ?, ?, ?, ?)
 `
 
 type SaveWordParams struct {
