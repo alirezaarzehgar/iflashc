@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"slices"
+	"sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -32,8 +33,9 @@ type TextBox struct {
 }
 
 type GUI struct {
-	app fyne.App
-	win fyne.Window
+	app  fyne.App
+	win  fyne.Window
+	lock *sync.Mutex
 }
 
 func NewGUI() GUI {
@@ -46,7 +48,7 @@ func NewGUI() GUI {
 			a.Quit()
 		}
 	})
-	return GUI{win: w, app: a}
+	return GUI{win: w, app: a, lock: &sync.Mutex{}}
 }
 
 func (g GUI) ShowText(tb TextBox) {
@@ -151,6 +153,12 @@ func (g GUI) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	g.win.Show()
 }
 
+func (g GUI) SetContent(page *fyne.Container) {
+	g.lock.Lock()
+	g.win.SetContent(page)
+	g.lock.Unlock()
+}
+
 func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 	g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
 
@@ -160,16 +168,16 @@ func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 	pageSelector := widget.NewSelect([]string{"history", "notes"}, func(s string) {
 		switch s {
 		case "history":
-			g.win.SetContent(historyPage)
+			g.SetContent(historyPage)
 		case "notes":
-			g.win.SetContent(notesPage)
+			g.SetContent(notesPage)
 		}
 	})
 	pageSelector.SetSelected("history")
 
 	historyPage = g.historyPage(q, cfgs, pageSelector)
 	notesPage = g.notesPage(q, cfgs, pageSelector)
-	g.win.SetContent(historyPage)
+	g.SetContent(historyPage)
 	g.win.Show()
 }
 
@@ -204,7 +212,7 @@ func (g GUI) historyPage(q *query.Queries, cfgs config.Config, pageSelector *wid
 							g.win.SetContent(historyPage)
 						})
 
-						g.win.SetContent(container.NewVBox(title, rt, backBtn))
+						g.SetContent(container.NewVBox(title, rt, backBtn))
 						g.win.Resize(fyne.NewSize(DefaultDictWindowLen, 0))
 					}))
 				}
@@ -312,10 +320,10 @@ func (g GUI) notesPage(q *query.Queries, cfgs config.Config, pageSelector *widge
 
 						backBtn := widget.NewButton("back", func() {
 							g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
-							g.win.SetContent(notesPage)
+							g.SetContent(notesPage)
 						})
 
-						g.win.SetContent(container.NewVBox(title, note, comment, backBtn))
+						g.SetContent(container.NewVBox(title, note, comment, backBtn))
 						g.win.Resize(fyne.NewSize(DefaultDictWindowLen, 0))
 					}))
 				}
