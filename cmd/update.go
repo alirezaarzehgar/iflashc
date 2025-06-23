@@ -1,0 +1,118 @@
+/*
+Copyright © 2025 Alireza Arzehgar <alirezaarzehgar82@gmail.com>
+*/
+package cmd
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"path"
+	"strings"
+	"time"
+
+	"github.com/spf13/cobra"
+)
+
+var (
+	Version     string
+	updateParam struct {
+		BinDir string
+	}
+)
+
+type repoLatestVersion struct {
+	Name   string `json:"name"`
+	Assets []struct {
+		Name string `json:"name"`
+		Size int64  `json:"size"`
+	} `json:"assets"`
+}
+
+// updateCmd represents the update command
+var updateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "update tool to latest version",
+	Run: func(cmd *cobra.Command, args []string) {
+		res, err := http.Get("https://api.github.com/repos/alirezaarzehgar/iflashc/releases/latest")
+		if err != nil {
+			log.Fatal("failed to get latest version from github: ", err)
+		}
+
+		rlv := repoLatestVersion{}
+		err = json.NewDecoder(res.Body).Decode(&rlv)
+		if err != nil {
+			log.Fatal("failed to unmarshal github response: ", err)
+		}
+
+		if Version == rlv.Name {
+			fmt.Println("No need to update!", "version", Version)
+			return
+		}
+
+		outputFile, err := os.OpenFile(path.Join(updateParam.BinDir, "iflashc"), os.O_CREATE|os.O_WRONLY, os.FileMode(0755))
+		if err != nil {
+			log.Fatal("failed to create binary file: %w", outputFile)
+		}
+		defer outputFile.Close()
+
+		fmt.Println("downloading", rlv.Name)
+		res, err = http.Get("https://github.com/alirezaarzehgar/iflashc/releases/latest/download/iflashc")
+		if err != nil {
+			log.Fatal("failed to download latest version")
+		}
+		defer res.Body.Close()
+
+		var totalSize int64
+		for _, asset := range rlv.Assets {
+			if asset.Name == "iflashc" {
+				totalSize = asset.Size
+				break
+			}
+		}
+
+		done := make(chan any)
+		go func() {
+			if totalSize == 0 {
+				log.Println("no progress bar. total reported update size is zero!")
+				return
+			}
+
+			for {
+				time.Sleep(time.Second / 3)
+				offset, err := outputFile.Seek(0, io.SeekCurrent)
+				if err != nil {
+					continue
+				}
+				if offset > 0 {
+					percentage := float64(offset) / float64(totalSize) * 100
+					mb := float64(offset) / 1024 / 1024
+					visualPerc := strings.Repeat("█", int(percentage)) + strings.Repeat(" ", 100-int(percentage))
+
+					fmt.Printf("\r %.2fMB - %.2f%% [%s]\x1b[?25l", mb, percentage, visualPerc)
+				}
+				if offset == totalSize {
+					fmt.Println()
+					done <- struct{}{}
+					break
+				}
+			}
+		}()
+
+		n, err := io.Copy(outputFile, res.Body)
+		if err != nil {
+			log.Fatal("failed to write on destination file: %w", err)
+		}
+
+		<-done
+		fmt.Printf("iflashc updated successfully: %.2fMB\n", float64(n)/1024/1024)
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(updateCmd)
+	rootCmd.PersistentFlags().StringVar(&updateParam.BinDir, "dir", "/bin", "output directory for downloading binary")
+}

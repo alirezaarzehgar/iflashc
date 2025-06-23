@@ -1,8 +1,7 @@
 SRC := $(shell find -name "*.go")
 BIN := iflashc
-VERSION := $(shell git describe --tags 2>/dev/null || echo "v0.0.0")
-BUILD_TIME := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
-LDFLAGS := -ldflags="-s -w -X main.version=${VERSION} -X main.buildTime=${BUILD_TIME}"
+VERSION := $(shell git describe --tags 2>/dev/null)
+LDFLAGS := -ldflags="-s -w -X=github.com/alirezaarzehgar/iflashc/cmd.Version=${VERSION}"
 
 all: download build
 
