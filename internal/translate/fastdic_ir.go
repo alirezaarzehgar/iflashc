@@ -42,7 +42,8 @@ func (f fastdic) Translate(text string) (string, error) {
 		return "", fmt.Errorf("failed to decode response: %w", err)
 	}
 	for _, r := range fsr {
-		if !strings.Contains(r.Meaning, "&rarr;") {
+		// TODO: BUG: second condition may causes logical problem when meaning contains this words
+		if !strings.Contains(r.Meaning, "&rarr;") && !strings.Contains(r.Meaning, "برای مشاهده") {
 			meanings = append(meanings, r)
 		}
 	}
