@@ -19,16 +19,19 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"net/http"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/alirezaarzehgar/iflashc/internal/config"
 	"github.com/alirezaarzehgar/iflashc/internal/query"
+	"github.com/alirezaarzehgar/iflashc/internal/setproxy"
 	"github.com/alirezaarzehgar/iflashc/internal/translate"
 	"github.com/alirezaarzehgar/iflashc/internal/ui"
 	"github.com/spf13/cobra"
 	"github.com/tiagomelo/go-clipboard/clipboard"
+	"golang.org/x/net/proxy"
 
 	_ "embed"
 
@@ -141,4 +144,16 @@ func init() {
 	app.queries = query.New(app.db)
 	kv, _ := app.queries.GetConfigs(app.ctx)
 	app.configs = config.ConfigToMap(kv)
+
+	if v, ok := app.configs[config.DefaultKeys.Socks5]; ok && v != "" {
+		httpClient, err := setproxy.NewSocks5Client(v, &proxy.Auth{
+			User:     app.configs[config.DefaultKeys.Socks5Username],
+			Password: app.configs[config.DefaultKeys.Socks5Password],
+		})
+		if err != nil {
+			app.gui.ShowError("failed connecting to proxy", err)
+			return
+		}
+		http.DefaultClient = httpClient
+	}
 }
