@@ -24,6 +24,7 @@ var historyCmd = &cobra.Command{
 	Use:   "dashboard",
 	Short: "visit saved words and notes",
 	Run: func(cmd *cobra.Command, args []string) {
+		initGuiAndDB()
 		app.gui.Dashboard(app.queries, app.configs)
 		app.gui.Run()
 	},

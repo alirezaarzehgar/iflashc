@@ -24,6 +24,7 @@ var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "manage configs",
 	Run: func(cmd *cobra.Command, args []string) {
+		initGuiAndDB()
 		app.gui.ManageConfigs(app.queries, app.configs)
 		app.gui.Run()
 	},

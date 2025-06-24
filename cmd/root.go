@@ -59,6 +59,7 @@ var rootCmd = &cobra.Command{
 	Use:   "iflashc",
 	Short: "translate selected text",
 	Run: func(cmd *cobra.Command, args []string) {
+		initGuiAndDB()
 		defer app.gui.Run()
 
 		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
@@ -104,20 +105,7 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
-}
-
-func init() {
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.PersistentFlags().StringVar(&TranslateConfig.dbPath, "db", path.Join(os.Getenv("HOME"), ".iflashc.db"), "local database path")
-	rootCmd.PersistentFlags().BoolVar(&TranslateConfig.noDB, "nodb", false, "disable database actions and operate using default values")
-
+func initGuiAndDB() {
 	var err error
 	app.gui = ui.NewGUI()
 
@@ -156,4 +144,19 @@ func init() {
 		}
 		http.DefaultClient = httpClient
 	}
+}
+
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
+func Execute() {
+	err := rootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
+}
+
+func init() {
+	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&TranslateConfig.dbPath, "db", path.Join(os.Getenv("HOME"), ".iflashc.db"), "local database path")
+	rootCmd.PersistentFlags().BoolVar(&TranslateConfig.noDB, "nodb", false, "disable database actions and operate using default values")
 }

@@ -33,6 +33,8 @@ var noteCmd = &cobra.Command{
 	Use:   "note",
 	Short: "manage notes and bookmarks",
 	Run: func(cmd *cobra.Command, args []string) {
+		initGuiAndDB()
+
 		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
 		selectedText, err := c.PasteText()
 		if err != nil {
