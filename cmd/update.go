@@ -68,14 +68,14 @@ var updateCmd = &cobra.Command{
 
 		outputFile, err := os.OpenFile(path.Join(updateParam.BinDir, "iflashc"), os.O_CREATE|os.O_WRONLY, os.FileMode(0755))
 		if err != nil {
-			log.Fatalf("failed to create binary file: %w", outputFile)
+			log.Fatalf("failed to create binary file: %s", err)
 		}
 		defer outputFile.Close()
 
 		fmt.Println("downloading", rlv.Name)
 		res, err = http.Get("https://github.com/alirezaarzehgar/iflashc/releases/latest/download/iflashc")
 		if err != nil {
-			log.Fatalf("failed to download latest version")
+			log.Fatalf("failed to download latest version: %s", err)
 		}
 		defer res.Body.Close()
 
@@ -117,7 +117,7 @@ var updateCmd = &cobra.Command{
 
 		n, err := io.Copy(outputFile, res.Body)
 		if err != nil {
-			log.Fatalf("failed to write on destination file: %w", err)
+			log.Fatalf("failed to write on destination file: %s", err)
 		}
 
 		<-done
