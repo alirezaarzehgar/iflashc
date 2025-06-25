@@ -23,6 +23,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"time"
@@ -66,7 +67,7 @@ var updateCmd = &cobra.Command{
 			return
 		}
 
-		outputFile, err := os.OpenFile(path.Join(updateParam.BinDir, "iflashc"), os.O_CREATE|os.O_WRONLY, os.FileMode(0755))
+		outputFile, err := os.OpenFile(path.Join("/tmp", "iflashc"), os.O_CREATE|os.O_WRONLY, os.FileMode(0755))
 		if err != nil {
 			log.Fatalf("failed to create binary file: %s", err)
 		}
@@ -122,6 +123,11 @@ var updateCmd = &cobra.Command{
 
 		<-done
 		fmt.Printf("iflashc updated successfully: %.2fMB\n", float64(n)/1024/1024)
+
+		c := exec.Command("mv", "/tmp/iflashc", updateParam.BinDir)
+		if err := c.Start(); err != nil {
+			log.Fatalf("failed to mv downloaded update to destination: %s", err)
+		}
 	},
 }
 
