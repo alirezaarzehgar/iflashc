@@ -24,8 +24,10 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -51,6 +53,18 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "update tool to latest version",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Disable cursor
+		fmt.Print("\x1b[?25l")
+		defer fmt.Print("\x1b[?25h")
+
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+		go func() {
+			<-sigs
+			fmt.Print("\x1b[?25h")
+			os.Exit(0)
+		}()
+
 		res, err := http.Get("https://api.github.com/repos/alirezaarzehgar/iflashc/releases/latest")
 		if err != nil {
 			log.Fatalf("failed to get latest version from github: ", err)
@@ -106,7 +120,7 @@ var updateCmd = &cobra.Command{
 					mb := float64(offset) / 1024 / 1024
 					visualPerc := strings.Repeat("█", int(percentage)) + strings.Repeat(" ", 100-int(percentage))
 
-					fmt.Printf("\r %.2fMB - %.2f%% [%s]\x1b[?25l", mb, percentage, visualPerc)
+					fmt.Printf("\r %.2fMB - %.2f%% [%s]", mb, percentage, visualPerc)
 				}
 				if offset == totalSize {
 					fmt.Println()
