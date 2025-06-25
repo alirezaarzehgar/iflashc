@@ -52,13 +52,13 @@ var updateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := http.Get("https://api.github.com/repos/alirezaarzehgar/iflashc/releases/latest")
 		if err != nil {
-			log.Fatal("failed to get latest version from github: ", err)
+			log.Fatalf("failed to get latest version from github: ", err)
 		}
 
 		rlv := repoLatestVersion{}
 		err = json.NewDecoder(res.Body).Decode(&rlv)
 		if err != nil {
-			log.Fatal("failed to unmarshal github response: ", err)
+			log.Fatalf("failed to unmarshal github response: ", err)
 		}
 
 		if Version == rlv.Name {
@@ -68,14 +68,14 @@ var updateCmd = &cobra.Command{
 
 		outputFile, err := os.OpenFile(path.Join(updateParam.BinDir, "iflashc"), os.O_CREATE|os.O_WRONLY, os.FileMode(0755))
 		if err != nil {
-			log.Fatal("failed to create binary file: %w", outputFile)
+			log.Fatalf("failed to create binary file: %w", outputFile)
 		}
 		defer outputFile.Close()
 
 		fmt.Println("downloading", rlv.Name)
 		res, err = http.Get("https://github.com/alirezaarzehgar/iflashc/releases/latest/download/iflashc")
 		if err != nil {
-			log.Fatal("failed to download latest version")
+			log.Fatalf("failed to download latest version")
 		}
 		defer res.Body.Close()
 
@@ -117,7 +117,7 @@ var updateCmd = &cobra.Command{
 
 		n, err := io.Copy(outputFile, res.Body)
 		if err != nil {
-			log.Fatal("failed to write on destination file: %w", err)
+			log.Fatalf("failed to write on destination file: %w", err)
 		}
 
 		<-done
