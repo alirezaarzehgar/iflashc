@@ -25,7 +25,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"path"
 	"strings"
 	"syscall"
 	"time"
@@ -81,11 +80,14 @@ var updateCmd = &cobra.Command{
 			return
 		}
 
-		outputFile, err := os.OpenFile(path.Join("/tmp", "iflashc"), os.O_CREATE|os.O_WRONLY, os.FileMode(0755))
+		outputFile, err := os.OpenFile("/tmp/iflashc", os.O_CREATE|os.O_WRONLY, os.FileMode(0755))
 		if err != nil {
 			log.Fatalf("failed to create binary file: %s", err)
 		}
-		defer outputFile.Close()
+		defer func() {
+			outputFile.Close()
+			os.Remove("/tmp/iflashc")
+		}()
 
 		fmt.Println("downloading", rlv.Name)
 		res, err = http.Get("https://github.com/alirezaarzehgar/iflashc/releases/latest/download/iflashc")
