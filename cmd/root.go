@@ -39,11 +39,14 @@ import (
 )
 
 var (
-	TranslateConfig struct {
+	rootParams struct {
 		dbPath            string
 		noDB              bool
 		SchemaDataQueries string
+		inputText         string
 	}
+
+	configParams map[string]*string = make(map[string]*string)
 
 	app struct {
 		gui     ui.GUI
@@ -62,34 +65,38 @@ var rootCmd = &cobra.Command{
 		initGuiAndDB()
 		defer app.gui.Run()
 
-		c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
-		selectedText, err := c.PasteText()
-		if err != nil {
-			app.gui.ShowError("failed to paste", err)
-			return
+		var err error
+		if rootParams.inputText == "" {
+			c := clipboard.New(clipboard.ClipboardOptions{Primary: true})
+			rootParams.inputText, err = c.PasteText()
+			if err != nil {
+				app.gui.ShowError("failed to paste", err)
+				return
+			}
 		}
 
-		selectedText = strings.ToLower(selectedText)
+		rootParams.inputText = strings.ToLower(rootParams.inputText)
 
 		cfgTranslator := app.configs[config.DefaultKeys.Translator]
 		cfgLang := app.configs[config.DefaultKeys.DestLang]
 		cfgCtx := app.configs[config.DefaultKeys.Context]
-		explaination, err := app.queries.FindMatchedWord(app.ctx, query.FindMatchedWordParams{Word: selectedText, Translator: cfgTranslator, Lang: cfgLang})
+		explaination, err := app.queries.FindMatchedWord(app.ctx,
+			query.FindMatchedWordParams{Word: rootParams.inputText, Translator: cfgTranslator, Lang: cfgLang})
 		if err == nil {
-			app.gui.ShowText(ui.TextBox{Title: selectedText, Text: explaination})
+			app.gui.ShowText(ui.TextBox{Title: rootParams.inputText, Text: explaination})
 			return
 		}
 
 		translator := translate.New(config.TransType(cfgTranslator), app.configs)
-		explaination, err = translator.Translate(selectedText)
+		explaination, err = translator.Translate(rootParams.inputText)
 		if err != nil {
 			app.gui.ShowError("failed to translate selected text", err)
 			return
 		}
 
-		if !TranslateConfig.noDB {
+		if !rootParams.noDB {
 			err = app.queries.SaveWord(app.ctx, query.SaveWordParams{
-				Word:       selectedText,
+				Word:       rootParams.inputText,
 				Exp:        explaination,
 				Translator: cfgTranslator,
 				Lang:       cfgLang,
@@ -101,7 +108,7 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		app.gui.ShowText(ui.TextBox{Title: selectedText, Text: explaination})
+		app.gui.ShowText(ui.TextBox{Title: rootParams.inputText, Text: explaination})
 	},
 }
 
@@ -110,13 +117,13 @@ func initGuiAndDB() {
 	app.gui = ui.NewGUI()
 
 	app.ctx = context.Background()
-	app.db, err = sql.Open("sqlite", TranslateConfig.dbPath)
+	app.db, err = sql.Open("sqlite", rootParams.dbPath)
 	if err != nil {
 		app.gui.ShowError("failed to open local database", err)
 		return
 	}
 
-	if _, err = os.Stat(TranslateConfig.dbPath); os.IsNotExist(err) {
+	if _, err = os.Stat(rootParams.dbPath); os.IsNotExist(err) {
 		schema, err := config.GetSchema()
 		if err != nil {
 			app.gui.ShowError("failed to generate default config", err)
@@ -132,6 +139,12 @@ func initGuiAndDB() {
 	app.queries = query.New(app.db)
 	kv, _ := app.queries.GetConfigs(app.ctx)
 	app.configs = config.ConfigToMap(kv)
+
+	for key, value := range configParams {
+		if value != nil && *value != "" {
+			app.configs[key] = *value
+		}
+	}
 
 	if v, ok := app.configs[config.DefaultKeys.Socks5]; ok && v != "" {
 		httpClient, err := setproxy.NewSocks5Client(v, &proxy.Auth{
@@ -157,6 +170,13 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.PersistentFlags().StringVar(&TranslateConfig.dbPath, "db", path.Join(os.Getenv("HOME"), ".iflashc.db"), "local database path")
-	rootCmd.PersistentFlags().BoolVar(&TranslateConfig.noDB, "nodb", false, "disable database actions and operate using default values")
+	rootCmd.PersistentFlags().StringVar(&rootParams.dbPath, "db", path.Join(os.Getenv("HOME"), ".iflashc.db"), "local database path")
+	rootCmd.PersistentFlags().BoolVar(&rootParams.noDB, "nodb", false, "disable database actions and operate using default values")
+	rootCmd.PersistentFlags().StringVar(&rootParams.inputText, "input", "", "set input text from parameter instead of clipboard")
+
+	for _, key := range config.ConfigurableKeys {
+		newStr := ""
+		configParams[key] = &newStr
+		rootCmd.PersistentFlags().StringVar(configParams[key], key, "", "set "+key)
+	}
 }
