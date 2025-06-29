@@ -148,6 +148,6 @@ var updateCmd = &cobra.Command{
 }
 
 func init() {
+	updateCmd.PersistentFlags().StringVar(&updateParam.BinDir, "dir", "/bin", "output directory for downloading binary")
 	rootCmd.AddCommand(updateCmd)
-	rootCmd.PersistentFlags().StringVar(&updateParam.BinDir, "dir", "/bin", "output directory for downloading binary")
 }
