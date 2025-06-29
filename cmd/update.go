@@ -66,13 +66,13 @@ var updateCmd = &cobra.Command{
 
 		res, err := http.Get("https://api.github.com/repos/alirezaarzehgar/iflashc/releases/latest")
 		if err != nil {
-			log.Fatalf("failed to get latest version from github: ", err)
+			log.Fatalf("failed to get latest version from github: %s", err)
 		}
 
 		rlv := repoLatestVersion{}
 		err = json.NewDecoder(res.Body).Decode(&rlv)
 		if err != nil {
-			log.Fatalf("failed to unmarshal github response: ", err)
+			log.Fatalf("failed to unmarshal github response: %s", err)
 		}
 
 		if Version == rlv.Name {
