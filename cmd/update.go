@@ -41,6 +41,7 @@ var (
 
 type repoLatestVersion struct {
 	Name   string `json:"name"`
+	Body   string `json:"body"`
 	Assets []struct {
 		Name string `json:"name"`
 		Size int64  `json:"size"`
@@ -90,6 +91,7 @@ var updateCmd = &cobra.Command{
 		}()
 
 		fmt.Println("downloading", rlv.Name)
+		fmt.Println(rlv.Body)
 		res, err = http.Get("https://github.com/alirezaarzehgar/iflashc/releases/latest/download/iflashc")
 		if err != nil {
 			log.Fatalf("failed to download latest version: %s", err)
