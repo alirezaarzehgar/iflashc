@@ -118,11 +118,11 @@ var updateCmd = &cobra.Command{
 					continue
 				}
 				if offset > 0 {
-					percentage := float64(offset) / float64(totalSize) * 100
+					progress := float64(offset) / float64(totalSize) * 50
 					mb := float64(offset) / 1024 / 1024
-					visualPerc := strings.Repeat("█", int(percentage)) + strings.Repeat(" ", 100-int(percentage))
+					visualPerc := strings.Repeat("█", int(progress)) + strings.Repeat(" ", 50-int(progress))
 
-					fmt.Printf("\r %.2fMB - %.2f%% [%s]", mb, percentage, visualPerc)
+					fmt.Printf("\r %.2fMB - %.2f%% [%s]", mb, progress*2, visualPerc)
 				}
 				if offset == totalSize {
 					fmt.Println()
