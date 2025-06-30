@@ -141,7 +141,7 @@ var updateCmd = &cobra.Command{
 		fmt.Printf("iflashc updated successfully: %.2fMB\n", float64(n)/1024/1024)
 
 		c := exec.Command("mv", "/tmp/iflashc", updateParam.BinDir)
-		if err := c.Start(); err != nil {
+		if err := c.Run(); err != nil {
 			log.Fatalf("failed to mv downloaded update to destination: %s", err)
 		}
 	},
