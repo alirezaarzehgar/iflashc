@@ -19,6 +19,7 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -44,6 +45,7 @@ var (
 		noDB              bool
 		SchemaDataQueries string
 		inputText         string
+		loadingPage       bool
 	}
 
 	configParams map[string]*string = make(map[string]*string)
@@ -85,6 +87,18 @@ var rootCmd = &cobra.Command{
 		if err == nil {
 			app.gui.ShowText(ui.TextBox{Title: rootParams.inputText, Text: explaination})
 			return
+		}
+
+		if rootParams.loadingPage {
+			app.gui.ShowText(ui.TextBox{
+				Title: "LOADING SCREEN",
+				Text: fmt.Sprint(
+					"context:", app.configs[config.DefaultKeys.Context], "\n\n",
+					"translator:", app.configs[config.DefaultKeys.Translator], "\n\n",
+					"destination language:", app.configs[config.DefaultKeys.DestLang], "\n\n",
+				),
+				Size: ui.LoadingSize,
+			})
 		}
 
 		translator := translate.New(config.TransType(cfgTranslator), app.configs)
@@ -173,6 +187,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&rootParams.dbPath, "db", path.Join(os.Getenv("HOME"), ".iflashc.db"), "local database path")
 	rootCmd.PersistentFlags().BoolVar(&rootParams.noDB, "nodb", false, "disable database actions and operate using default values")
 	rootCmd.PersistentFlags().StringVar(&rootParams.inputText, "input", "", "set input text from parameter instead of clipboard")
+	rootCmd.PersistentFlags().BoolVar(&rootParams.loadingPage, "loading", false, "enable loading page mechanism")
 
 	for _, key := range config.ConfigurableKeys {
 		newStr := ""

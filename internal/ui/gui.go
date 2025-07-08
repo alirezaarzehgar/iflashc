@@ -26,10 +26,12 @@ var (
 	DefaultTitleSize     float32   = 35
 	DefaultWindowSize    fyne.Size = fyne.NewSize(600, 200)
 	DefaultDictWindowLen float32   = 800
+	LoadingSize          fyne.Size = fyne.NewSize(400, 200)
 )
 
 type TextBox struct {
 	Title, Text string
+	Size        fyne.Size
 }
 
 type GUI struct {
@@ -52,6 +54,10 @@ func NewGUI() GUI {
 }
 
 func (g GUI) ShowText(tb TextBox) {
+	if !tb.Size.IsZero() {
+		g.win.Resize(tb.Size)
+	}
+
 	if len(tb.Title) > MaxTitleLen {
 		tb.Title = tb.Title[:MaxTitleLen]
 	}
@@ -61,10 +67,10 @@ func (g GUI) ShowText(tb TextBox) {
 	l.Alignment = fyne.TextAlignCenter
 
 	rt := widget.NewRichTextFromMarkdown(tb.Text)
-	rt.Wrapping = fyne.TextWrapBreak
 
 	g.win.SetContent(container.NewVBox(l, rt))
 	g.win.Show()
+	g.win.CenterOnScreen()
 }
 
 func (g GUI) GetCommentAndConfirmNote(text string) (string, bool) {
@@ -100,6 +106,8 @@ func (g GUI) Run() {
 }
 
 func (g GUI) ShowError(text string, err error) {
+	g.win.Resize(DefaultWindowSize)
+
 	l := canvas.NewText(text, color.White)
 	l.TextSize = DefaultTitleSize
 	l.Alignment = fyne.TextAlignCenter
@@ -109,6 +117,7 @@ func (g GUI) ShowError(text string, err error) {
 
 	g.win.SetContent(container.NewPadded(container.NewVBox(l, rt)))
 	g.win.Show()
+	g.win.CenterOnScreen()
 }
 
 type keyEntry map[string]*widget.Entry
