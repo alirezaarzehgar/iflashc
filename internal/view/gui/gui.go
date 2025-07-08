@@ -1,4 +1,4 @@
-package ui
+package gui
 
 import (
 	"context"
@@ -14,25 +14,26 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+
 	"github.com/alirezaarzehgar/iflashc/internal/config"
 	"github.com/alirezaarzehgar/iflashc/internal/query"
+	"github.com/alirezaarzehgar/iflashc/internal/view/ui"
 )
+
+func init() {
+	ui.TypeRegistry[Backend] = New
+}
 
 const (
 	MaxTitleLen = 45
+	Backend     = "gui"
 )
 
 var (
 	DefaultTitleSize     float32   = 35
 	DefaultWindowSize    fyne.Size = fyne.NewSize(600, 200)
 	DefaultDictWindowLen float32   = 800
-	LoadingSize          fyne.Size = fyne.NewSize(400, 200)
 )
-
-type TextBox struct {
-	Title, Text string
-	Size        fyne.Size
-}
 
 type GUI struct {
 	app  fyne.App
@@ -40,7 +41,9 @@ type GUI struct {
 	lock *sync.Mutex
 }
 
-func NewGUI() GUI {
+func New() ui.UI {
+	ui.LoadingPageSize = ui.WindowSize{Width: 400, Height: 200}
+
 	a := app.New()
 	w := a.NewWindow("Integrated Flashcard")
 	w.Resize(DefaultWindowSize)
@@ -53,9 +56,9 @@ func NewGUI() GUI {
 	return GUI{win: w, app: a, lock: &sync.Mutex{}}
 }
 
-func (g GUI) ShowText(tb TextBox) {
-	if !tb.Size.IsZero() {
-		g.win.Resize(tb.Size)
+func (g GUI) ShowText(tb ui.TextBox) {
+	if tb.Size.Height+tb.Size.Width > 0 {
+		g.win.Resize(fyne.NewSize(tb.Size.Width, tb.Size.Width))
 	}
 
 	if len(tb.Title) > MaxTitleLen {
@@ -162,7 +165,7 @@ func (g GUI) ManageConfigs(q *query.Queries, cfgs config.Config) {
 	g.win.Show()
 }
 
-func (g GUI) SetContent(page *fyne.Container) {
+func (g GUI) setContent(page *fyne.Container) {
 	g.lock.Lock()
 	g.win.SetContent(page)
 	g.lock.Unlock()
@@ -177,16 +180,16 @@ func (g GUI) Dashboard(q *query.Queries, cfgs config.Config) {
 	pageSelector := widget.NewSelect([]string{"history", "notes"}, func(s string) {
 		switch s {
 		case "history":
-			g.SetContent(historyPage)
+			g.setContent(historyPage)
 		case "notes":
-			g.SetContent(notesPage)
+			g.setContent(notesPage)
 		}
 	})
 	pageSelector.SetSelected("history")
 
 	historyPage = g.historyPage(q, cfgs, pageSelector)
 	notesPage = g.notesPage(q, cfgs, pageSelector)
-	g.SetContent(historyPage)
+	g.setContent(historyPage)
 	g.win.Show()
 }
 
@@ -221,7 +224,7 @@ func (g GUI) historyPage(q *query.Queries, cfgs config.Config, pageSelector *wid
 							g.win.SetContent(historyPage)
 						})
 
-						g.SetContent(container.NewVBox(title, rt, backBtn))
+						g.setContent(container.NewVBox(title, rt, backBtn))
 						g.win.Resize(fyne.NewSize(DefaultDictWindowLen, 0))
 					}))
 				}
@@ -329,10 +332,10 @@ func (g GUI) notesPage(q *query.Queries, cfgs config.Config, pageSelector *widge
 
 						backBtn := widget.NewButton("back", func() {
 							g.win.Resize(fyne.NewSize(DefaultDictWindowLen, DefaultDictWindowLen))
-							g.SetContent(notesPage)
+							g.setContent(notesPage)
 						})
 
-						g.SetContent(container.NewVBox(title, note, comment, backBtn))
+						g.setContent(container.NewVBox(title, note, comment, backBtn))
 						g.win.Resize(fyne.NewSize(DefaultDictWindowLen, 0))
 					}))
 				}

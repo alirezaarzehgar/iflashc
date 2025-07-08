@@ -29,7 +29,8 @@ import (
 	"github.com/alirezaarzehgar/iflashc/internal/query"
 	"github.com/alirezaarzehgar/iflashc/internal/setproxy"
 	"github.com/alirezaarzehgar/iflashc/internal/translate"
-	"github.com/alirezaarzehgar/iflashc/internal/ui"
+	"github.com/alirezaarzehgar/iflashc/internal/view/gui"
+	"github.com/alirezaarzehgar/iflashc/internal/view/ui"
 	"github.com/spf13/cobra"
 	"github.com/tiagomelo/go-clipboard/clipboard"
 	"golang.org/x/net/proxy"
@@ -51,7 +52,7 @@ var (
 	configParams map[string]*string = make(map[string]*string)
 
 	app struct {
-		gui     ui.GUI
+		gui     ui.UI
 		ctx     context.Context
 		db      *sql.DB
 		queries *query.Queries
@@ -97,7 +98,7 @@ var rootCmd = &cobra.Command{
 					"translator:", app.configs[config.DefaultKeys.Translator], "\n\n",
 					"destination language:", app.configs[config.DefaultKeys.DestLang], "\n\n",
 				),
-				Size: ui.LoadingSize,
+				Size: ui.LoadingPageSize,
 			})
 		}
 
@@ -128,7 +129,7 @@ var rootCmd = &cobra.Command{
 
 func initGuiAndDB() {
 	var err error
-	app.gui = ui.NewGUI()
+	app.gui = ui.New(gui.Backend)
 
 	app.ctx = context.Background()
 	app.db, err = sql.Open("sqlite", rootParams.dbPath)
