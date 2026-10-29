@@ -53,10 +53,9 @@ Run `iflashc --help` to see available commands.
 
 ## DemonRoute translator
 
-[DemonRoute](https://demonroute.com) is an OpenAI-compatible API. To use it, set
-`translator` to `demonroute` and put your API key (from demonroute.com) in
-`demonroute_api_key`. You can pick a model with `demonroute_model`; if it is empty,
-`shoukewei/Qwen3.8-27B-OBLITERATED22-AGENT` is used.
+Set `translator` to `demonroute` to use [DemonRoute](https://demonroute.com). It
+reuses the `openai_api_key` field (put your DemonRoute key there) and the optional
+`openai_model` field; the base URL is built in.
 
 ## Config i3
 You can bind these subcommands to any key in i3 or other window managers/desktop environments.
