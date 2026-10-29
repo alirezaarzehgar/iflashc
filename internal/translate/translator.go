@@ -25,6 +25,17 @@ func New(t config.TransType, cfg config.Config) Translator {
 		return dictionaryapi{}
 	case config.TypeFastdic:
 		return fastdic{}
+	case config.TypeDemonRoute:
+		model := cfg[config.DefaultKeys.DemonRouteModel]
+		if model == "" {
+			model = DemonRouteDefaultModel
+		}
+		return openAI{
+			To:      cfg[config.DefaultKeys.DestLang],
+			Model:   model,
+			ApiKey:  cfg[config.DefaultKeys.DemonRouteApiKey],
+			BaseURL: DemonRouteBaseURL,
+		}
 	}
 
 	nativeTargetLang := cfg[config.DefaultKeys.DestLang]
