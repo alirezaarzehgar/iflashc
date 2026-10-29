@@ -28,32 +28,28 @@ var ConfigurableTranslators = []string{
 }
 
 type Keys struct {
-	DestLang         string
-	Context          string
-	Socks5           string
-	Socks5Username   string
-	Socks5Password   string
-	Translator       string
-	OpenAIApiKey     string
-	OpenAIBaseURL    string
-	OpenAIModel      string
-	DemonRouteApiKey string
-	DemonRouteModel  string
+	DestLang       string
+	Context        string
+	Socks5         string
+	Socks5Username string
+	Socks5Password string
+	Translator     string
+	OpenAIApiKey   string
+	OpenAIBaseURL  string
+	OpenAIModel    string
 }
 
 var (
 	DefaultKeys = Keys{
-		DestLang:         "dest_lang",
-		Context:          "context",
-		Socks5:           "proxy_socks5",
-		Socks5Username:   "socks5_username",
-		Socks5Password:   "socks5_password",
-		Translator:       "translator",
-		OpenAIApiKey:     "openai_api_key",
-		OpenAIModel:      "openai_model",
-		OpenAIBaseURL:    "openai_base_url",
-		DemonRouteApiKey: "demonroute_api_key",
-		DemonRouteModel:  "demonroute_model",
+		DestLang:       "dest_lang",
+		Context:        "context",
+		Socks5:         "proxy_socks5",
+		Socks5Username: "socks5_username",
+		Socks5Password: "socks5_password",
+		Translator:     "translator",
+		OpenAIApiKey:   "openai_api_key",
+		OpenAIModel:    "openai_model",
+		OpenAIBaseURL:  "openai_base_url",
 	}
 
 	DefaultConfigs = Defaults{
@@ -68,8 +64,6 @@ var (
 		DefaultKeys.OpenAIApiKey,
 		DefaultKeys.OpenAIModel,
 		DefaultKeys.OpenAIBaseURL,
-		DefaultKeys.DemonRouteApiKey,
-		DefaultKeys.DemonRouteModel,
 		DefaultKeys.DestLang,
 		DefaultKeys.Socks5,
 		DefaultKeys.Socks5Username,
