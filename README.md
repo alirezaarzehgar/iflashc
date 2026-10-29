@@ -16,6 +16,7 @@ Using this app is definitely simpler than explaining it:
 - Boom! See the meaning, definition, examples, and synonyms of the selected word.  
 
 You can configure the translator, destination language, OpenAI token and base URL, context, and even a proxy.  
+Built-in translators: `openai`, `google`, `dictapi`, `fastdic`, and `demonroute`.  
 
 **iflash** caches everything. You can set a context for saved words in a specific cycle  
 and then practice them through a generated library/dictionary.  
@@ -49,6 +50,13 @@ Set shortcut on your faivorite desktop/window manager and enjoy.
 Run `iflashc --help` to see available commands.
 
 # Configuration
+
+## DemonRoute translator
+
+Set `translator` to `demonroute` to use [DemonRoute](https://demonroute.com). It
+reuses the `openai_api_key` field (put your DemonRoute key there) and the optional
+`openai_model` field; the base URL is built in.
+
 ## Config i3
 You can bind these subcommands to any key in i3 or other window managers/desktop environments.
 Save following configurations on your `i3` config file on `~/.config/i3/config`.

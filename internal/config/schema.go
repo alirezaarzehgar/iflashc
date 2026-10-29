@@ -16,6 +16,7 @@ const (
 	TypeGoogle        = "google"
 	TypeDictionaryApi = "dictapi"
 	TypeFastdic       = "fastdic"
+	TypeDemonRoute    = "demonroute"
 )
 
 var ConfigurableTranslators = []string{
@@ -23,6 +24,7 @@ var ConfigurableTranslators = []string{
 	TypeGoogle,
 	TypeDictionaryApi,
 	TypeFastdic,
+	TypeDemonRoute,
 }
 
 type Keys struct {
