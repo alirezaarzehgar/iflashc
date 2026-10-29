@@ -26,14 +26,14 @@ func New(t config.TransType, cfg config.Config) Translator {
 	case config.TypeFastdic:
 		return fastdic{}
 	case config.TypeDemonRoute:
-		model := cfg[config.DefaultKeys.DemonRouteModel]
+		model := cfg[config.DefaultKeys.OpenAIModel]
 		if model == "" {
 			model = DemonRouteDefaultModel
 		}
 		return openAI{
 			To:      cfg[config.DefaultKeys.DestLang],
 			Model:   model,
-			ApiKey:  cfg[config.DefaultKeys.DemonRouteApiKey],
+			ApiKey:  cfg[config.DefaultKeys.OpenAIApiKey],
 			BaseURL: DemonRouteBaseURL,
 		}
 	}
