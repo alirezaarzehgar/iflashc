@@ -16,7 +16,7 @@ Using this app is definitely simpler than explaining it:
 - Boom! See the meaning, definition, examples, and synonyms of the selected word.  
 
 You can configure the translator, destination language, OpenAI token and base URL, context, and even a proxy.  
-Built-in translators: `openai`, `google`, `dictapi`, `fastdic`, and `demonroute`.  
+Built-in translators: `openai`, `google`, `dictapi`, `fastdic`, `demonroute`, and `cheaperinference`.  
 
 **iflash** caches everything. You can set a context for saved words in a specific cycle  
 and then practice them through a generated library/dictionary.  
@@ -56,6 +56,12 @@ Run `iflashc --help` to see available commands.
 Set `translator` to `demonroute` to use [DemonRoute](https://demonroute.com). It
 reuses the `openai_api_key` field (put your DemonRoute key there) and the optional
 `openai_model` field; the base URL is built in.
+
+## Cheaper Inference translator
+
+Set `translator` to `cheaperinference` to use [Cheaper Inference](https://cheaperinference.com). It
+reuses the `openai_api_key` field (put your Cheaper Inference key there) and the optional
+`openai_model` field (default `gpt-5.4-mini`); the base URL is built in.
 
 ## Config i3
 You can bind these subcommands to any key in i3 or other window managers/desktop environments.

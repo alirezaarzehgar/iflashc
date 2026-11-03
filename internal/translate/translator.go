@@ -36,6 +36,17 @@ func New(t config.TransType, cfg config.Config) Translator {
 			ApiKey:  cfg[config.DefaultKeys.OpenAIApiKey],
 			BaseURL: DemonRouteBaseURL,
 		}
+	case config.TypeCheaperInference:
+		model := cfg[config.DefaultKeys.OpenAIModel]
+		if model == "" {
+			model = CheaperInferenceDefaultModel
+		}
+		return openAI{
+			To:      cfg[config.DefaultKeys.DestLang],
+			Model:   model,
+			ApiKey:  cfg[config.DefaultKeys.OpenAIApiKey],
+			BaseURL: CheaperInferenceBaseURL,
+		}
 	}
 
 	nativeTargetLang := cfg[config.DefaultKeys.DestLang]
