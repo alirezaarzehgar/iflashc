@@ -12,11 +12,12 @@ import (
 type TransType string
 
 const (
-	TypeOpenAI        = "openai"
-	TypeGoogle        = "google"
-	TypeDictionaryApi = "dictapi"
-	TypeFastdic       = "fastdic"
-	TypeDemonRoute    = "demonroute"
+	TypeOpenAI           = "openai"
+	TypeGoogle           = "google"
+	TypeDictionaryApi    = "dictapi"
+	TypeFastdic          = "fastdic"
+	TypeDemonRoute       = "demonroute"
+	TypeCheaperInference = "cheaperinference"
 )
 
 var ConfigurableTranslators = []string{
@@ -25,6 +26,7 @@ var ConfigurableTranslators = []string{
 	TypeDictionaryApi,
 	TypeFastdic,
 	TypeDemonRoute,
+	TypeCheaperInference,
 }
 
 type Keys struct {
